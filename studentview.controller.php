@@ -17,60 +17,70 @@ require_once($CFG->dirroot.'/mod/scheduler/mailtemplatelib.php');
 
 /************************************************ Saving choice ************************************************/
 if ($action == 'savechoice') {
-    // get parameters
-    $slot_id_array = NULL;
-    $slot_id_array_raw = optional_param_array('slotid', '', PARAM_INT);
-    if (empty($slot_id_array_raw))
+   
+   	$slot_id_array = NULL;
+    if ($scheduler->schedulermode == 'multi')
+    {
+    	$slot_id_array_raw = optional_param_array('slotid', '', PARAM_INT);
+    }
+    else
     {
     	$slot_id_array_raw[] = optional_param('slotid', '', PARAM_INT);
     }
-    foreach ($slot_id_array_raw as $k=>$v)
+    if (!empty($slot_id_array_raw))
     {
-    	if (!empty($v))
+    	foreach ($slot_id_array_raw as $k=>$v)
     	{
-    		$slot_id_array_request[] = $v;
+    		if (!empty($v))
+    		{
+    			$slot_id_array_request[] = $v;
+    		}
     	}
     }
+    else $slot_id_array_request = false;
     
     $appointgroup = optional_param('appointgroup', 0, PARAM_INT);
     // $notes = optional_param('notes', '', PARAM_TEXT);
     
-    if (!$slot_id_array_request) {
-        notice(get_string('notselected', 'scheduler'), "view.php?id={$cm->id}");
-    }
+    //if (!$slot_id_array_request) {
+    //    notice(get_string('notselected', 'scheduler'), "view.php?id={$cm->id}");
+    //}
     
     // validate our slot ids
-    foreach ($slot_id_array_request as $index => $slotid)
+    if (!empty($slot_id_array_request))
     {
-    	if (!$slot = $DB->get_record('scheduler_slots', array('id' => $slotid))) {
-    		print_error('errorinvalidslot', 'scheduler');
-    	}
-    	
-    	$available = scheduler_get_appointments($slotid);
-    	$consumed = ($available) ? count($available) : 0 ;
-    
-    	$users_for_slot = scheduler_get_appointed($slotid);
-    	$already_signed_up = (isset($users_for_slot[$USER->id]));
-		
-		if (!$already_signed_up)
+		foreach ($slot_id_array_request as $index => $slotid)
 		{
-    		// if slot is already overcrowded
-    		if ($slot->exclusivity > 0 && ($slot->exclusivity <= $consumed)) {
-    			if ($updating = $DB->count_records('scheduler_appointment', array('slotid' => $slot->id, 'studentid' => $USER->id))) {
-    				$message = get_string('alreadyappointed', 'scheduler');
-    			} else {
-    				$message = get_string('slot_is_just_in_use', 'scheduler');
-    			}
-    			echo $OUTPUT->box_start('error');
-    			echo $message;
-    			echo $OUTPUT->continue_button("{$CFG->wwwroot}/mod/scheduler/view.php?id={$cm->id}");
-    			echo $OUTPUT->box_end();
-    			echo $OUTPUT->footer($course);
-    			exit();
-    		}
-    		$slot_id_array[$index] = $slotid;
-    	}
-    	$slot_id_array_validated[$index] = $slotid;
+			if (!$slot = $DB->get_record('scheduler_slots', array('id' => $slotid))) {
+				print_error('errorinvalidslot', 'scheduler');
+			}
+		
+			$available = scheduler_get_appointments($slotid);
+			$consumed = ($available) ? count($available) : 0 ;
+	
+			$users_for_slot = scheduler_get_appointed($slotid);
+			$already_signed_up = (isset($users_for_slot[$USER->id]));
+		
+			if (!$already_signed_up)
+			{
+				// if slot is already overcrowded
+				if ($slot->exclusivity > 0 && ($slot->exclusivity <= $consumed)) {
+					if ($updating = $DB->count_records('scheduler_appointment', array('slotid' => $slot->id, 'studentid' => $USER->id))) {
+						$message = get_string('alreadyappointed', 'scheduler');
+					} else {
+						$message = get_string('slot_is_just_in_use', 'scheduler');
+					}
+					echo $OUTPUT->box_start('error');
+					echo $message;
+					echo $OUTPUT->continue_button("{$CFG->wwwroot}/mod/scheduler/view.php?id={$cm->id}");
+					echo $OUTPUT->box_end();
+					echo $OUTPUT->footer($course);
+					exit();
+				}
+				$slot_id_array[$index] = $slotid;
+			}
+			$slot_id_array_validated[$index] = $slotid;
+		}
     }
     
     /// If we are scheduling a full group we must discard all pending appointments of other participants of the scheduled group
@@ -113,11 +123,14 @@ if ($action == 'savechoice') {
         {scheduler_appointment} AS a 
         WHERE 
         s.id = a.slotid AND
-        s.schedulerid = '{$slot->schedulerid}' AND 
+        s.schedulerid = '{$scheduler->id}' AND 
         a.studentid IN ('$oldslotownerlist') AND
-        a.attended = 0 and
-        a.slotid NOT IN (" . implode(",", $slot_id_array_validated) . ") 
+        a.attended = 0 
         ";
+    if (!empty($slot_id_array_validated))
+    {
+    	$sql .= " AND a.slotid NOT IN (" . implode(",", $slot_id_array_validated) . ")";
+    }
     if ($scheduler->schedulermode == 'onetime'){
         $sql .= " AND s.starttime > ".time();
     }
@@ -169,7 +182,7 @@ if ($action == 'savechoice') {
        		 	$appointment->timecreated = time();
        		 	$appointment->timemodified = time();
        		 	$DB->insert_record('scheduler_appointment', $appointment);
-       		 	scheduler_update_grades($scheduler, $astudentid);
+       		 	//scheduler_update_grades($scheduler, $astudentid);
        		 	scheduler_events_update($newslot, $course);
        	 	
        		 	// notify teacher

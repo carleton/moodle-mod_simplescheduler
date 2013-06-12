@@ -36,7 +36,7 @@ class mod_scheduler_mod_form extends moodleform_mod {
 	    $mform->setType('name', PARAM_CLEANHTML);
 	    $mform->addHelpButton('staffrolename', 'staffrolename', 'scheduler');
 	
-	    $modeoptions['onetime'] = get_string('oneatatime', 'scheduler');
+	    //$modeoptions['onetime'] = get_string('oneatatime', 'scheduler');
 	    $modeoptions['oneonly'] = get_string('oneappointmentonly', 'scheduler');
 	    $modeoptions['multi'] = get_string('multi', 'scheduler');
 	    $mform->addElement('select', 'schedulermode', get_string('mode', 'scheduler'), $modeoptions);
@@ -55,14 +55,15 @@ class mod_scheduler_mod_form extends moodleform_mod {
 	    $mform->addHelpButton('defaultslotduration', 'defaultslotduration', 'scheduler');
         $mform->setDefault('defaultslotduration', 15);
 
-        $mform->addElement('modgrade', 'scale', get_string('grade'));
+        //$mform->addElement('modgrade', 'scale', get_string('grade'));
+        $mform->addElement('hidden', 'scale');
         $mform->setDefault('scale', 0);
 
-        $gradingstrategy[MEAN_GRADE] = get_string('meangrade', 'scheduler');
-        $gradingstrategy[MAX_GRADE] = get_string('maxgrade', 'scheduler');
-	    $mform->addElement('select', 'gradingstrategy', get_string('gradingstrategy', 'scheduler'), $gradingstrategy);
-	    $mform->addHelpButton('gradingstrategy', 'gradingstrategy', 'scheduler');
-        $mform->disabledIf('gradingstrategy', 'scale', 'eq', 0);
+        //$gradingstrategy[MEAN_GRADE] = get_string('meangrade', 'scheduler');
+        //$gradingstrategy[MAX_GRADE] = get_string('maxgrade', 'scheduler');
+	    //$mform->addElement('select', 'gradingstrategy', get_string('gradingstrategy', 'scheduler'), $gradingstrategy);
+	    //$mform->addHelpButton('gradingstrategy', 'gradingstrategy', 'scheduler');
+        //$mform->disabledIf('gradingstrategy', 'scale', 'eq', 0);
 
         $yesno[0] = get_string('no');
         $yesno[1] = get_string('yes');

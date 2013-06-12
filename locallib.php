@@ -329,7 +329,7 @@ function scheduler_delete_slot($slotid, $scheduler=null){
     	if (!$scheduler){ // fetch optimization
 	        $scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
     	}
-    	scheduler_update_grades($scheduler); // generous, but works
+    	//scheduler_update_grades($scheduler); // generous, but works
     }
     
 }
@@ -674,75 +674,75 @@ function scheduler_get_student_event($slot, $studentid) {
 }
 
 
-/**
- * a utility function for formatting grades for display
- * @param reference $scheduler
- * @param string $grade the grade to be displayed
- * @param boolean $short formats the grade in short form (result empty if grading is
- * not used, or no grade is available; parantheses are put around the grade if it is present)
- * @return string the formatted grade
- */
-function scheduler_format_grade(&$scheduler, $grade, $short=false){
-    
-    global $DB;
-    
-    $result = '';
-    if ($scheduler->scale == 0 || is_null($grade) ){
-        // scheduler doesn't allow grading, or no grade entered
-        if (!$short) {
-            $result = get_string('nograde');
-        }
-    }
-    else {
-        if ($scheduler->scale > 0) {
-            // numeric grades
-            $result .= $grade;
-            if (strlen($grade)>0){
-                $result .=  '/' . $scheduler->scale;
-            }
-        }
-        else{
-            // grade on scale
-            if ($grade > 0) {
-                $scaleid = - ($scheduler->scale);
-                if ($scale = $DB->get_record('scale', array('id'=>$scaleid))) {
-                    $levels = explode(',',$scale->scale);
-                    if ($grade <= count($levels)) {
-                    	$result .= $levels[$grade-1];
-                    }
-                }
-            }
-        }
-        if ($short && (strlen($result)>0)) {
-            $result = '('.$result.')';
-        }
-    }
-    return $result;
-}
+// /**
+//  * a utility function for formatting grades for display
+//  * @param reference $scheduler
+//  * @param string $grade the grade to be displayed
+//  * @param boolean $short formats the grade in short form (result empty if grading is
+//  * not used, or no grade is available; parantheses are put around the grade if it is present)
+//  * @return string the formatted grade
+//  */
+// function scheduler_format_grade(&$scheduler, $grade, $short=false){
+//     
+//     global $DB;
+//     
+//     $result = '';
+//     if ($scheduler->scale == 0 || is_null($grade) ){
+//         // scheduler doesn't allow grading, or no grade entered
+//         if (!$short) {
+//             $result = get_string('nograde');
+//         }
+//     }
+//     else {
+//         if ($scheduler->scale > 0) {
+//             // numeric grades
+//             $result .= $grade;
+//             if (strlen($grade)>0){
+//                 $result .=  '/' . $scheduler->scale;
+//             }
+//         }
+//         else{
+//             // grade on scale
+//             if ($grade > 0) {
+//                 $scaleid = - ($scheduler->scale);
+//                 if ($scale = $DB->get_record('scale', array('id'=>$scaleid))) {
+//                     $levels = explode(',',$scale->scale);
+//                     if ($grade <= count($levels)) {
+//                     	$result .= $levels[$grade-1];
+//                     }
+//                 }
+//             }
+//         }
+//         if ($short && (strlen($result)>0)) {
+//             $result = '('.$result.')';
+//         }
+//     }
+//     return $result;
+// }
 
-/**
- * a utility function for making grading lists
- * @param reference $scheduler
- * @param string $id the form field id
- * @param string $selected the selected value
- * @return the html selection element for a grading list
- */
-function scheduler_make_grading_menu(&$scheduler, $id, $selected = '') {
-	global $DB;
-    if ($scheduler->scale > 0){
-        for($i = 0 ; $i <= $scheduler->scale ; $i++) {
-            $scalegrades[$i] = $i; 
-        }
-    }
-    else {
-        $scaleid = - ($scheduler->scale);
-        if ($scale = $DB->get_record('scale', array('id'=>$scaleid))) {
-            $scalegrades = make_menu_from_list($scale->scale);
-        }
-    }
-    $menu = html_writer::select($scalegrades, $id, $selected);
-    return $menu;
-}
+// /**
+//  * a utility function for making grading lists
+//  * @param reference $scheduler
+//  * @param string $id the form field id
+//  * @param string $selected the selected value
+//  * @return the html selection element for a grading list
+//  */
+// function scheduler_make_grading_menu(&$scheduler, $id, $selected = '') {
+// 	global $DB;
+//     if ($scheduler->scale > 0){
+//         for($i = 0 ; $i <= $scheduler->scale ; $i++) {
+//             $scalegrades[$i] = $i; 
+//         }
+//     }
+//     else {
+//         $scaleid = - ($scheduler->scale);
+//         if ($scale = $DB->get_record('scale', array('id'=>$scaleid))) {
+//             $scalegrades = make_menu_from_list($scale->scale);
+//         }
+//     }
+//     $menu = html_writer::select($scalegrades, $id, $selected);
+//     return $menu;
+// }
 
 
 /**

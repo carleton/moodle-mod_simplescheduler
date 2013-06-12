@@ -114,8 +114,8 @@ if ($numrecords){
     $whathappenedstr = get_string('whathappened','scheduler');
     
     
-    $tablecolumns = array('courseshort', 'schedulerid', 'starttime', 'appointmentlocation', 'student', 'department', 'notes', 'grade', 'appointmentnote');
-    $tableheaders = array("<b>$coursestr</b>", "<b>$schedulerstr</b>", "<b>$whenstr</b>", "<b>$wherestr</b>", "<b>$whostr</b>", "<b>$wherefromstr</b>", "<b>$whatstr</b>", "<b>$whatresultedstr</b>", "<b>$whathappenedstr</b>");
+    $tablecolumns = array('courseshort', 'schedulerid', 'starttime', 'appointmentlocation', 'studentfirstname', 'department', 'notes', 'appointmentnote');
+    $tableheaders = array("<b>$coursestr</b>", "<b>$schedulerstr</b>", "<b>$whenstr</b>", "<b>$wherestr</b>", "<b>$whostr</b>", "<b>$wherefromstr</b>", "<b>$whatstr</b>", "<b>$whathappenedstr</b>");
     
     $table = new flexible_table('mod-scheduler-datelist');
     $table->define_columns($tablecolumns);
@@ -162,15 +162,15 @@ if ($numrecords){
     $whomem = '';
     $whatmem = '';
     foreach($results as $id => $row){
-        $coursedata = ($coursemem != $row->courseshort) ? "<a href=\"{$CFG->wwwroot}/course/view.php?id={$row->courseid}\">".$row->courseshort.'</a>' : '';
+        $coursedata = "<a href=\"{$CFG->wwwroot}/course/view.php?id={$row->courseid}\">".$row->courseshort.'</a>';
         $coursemem = $row->courseshort;
-        $schedulerdata = ($schedulermem != $row->name) ? "<a href=\"{$CFG->wwwroot}/mod/scheduler/view.php?a={$row->schedulerid}\">".$row->name.'</a>' : '';
+        $schedulerdata = "<a href=\"{$CFG->wwwroot}/mod/scheduler/view.php?a={$row->schedulerid}\">".$row->name.'</a>';
         $schedulermem = $row->name;
-        $whendata = ($whenmem != "$row->starttime $row->duration") ? '<strong>'.date("d M Y G:i", $row->starttime).' '.get_string('for','scheduler')." $row->duration ".get_string('mins', 'scheduler').'</strong>' : '';
+        $whendata = '<strong>'.date("d M Y G:i", $row->starttime).' '.get_string('for','scheduler')." $row->duration ".get_string('mins', 'scheduler').'</strong>';
         $whenmem = "$row->starttime $row->duration";
-        $whodata = ($whomem != $row->studentmail) ? "<a href=\"{$CFG->wwwroot}/mod/scheduler/view.php?what=viewstudent&a={$row->schedulerid}&amp;studentid=$row->studentid&amp;course=$row->courseid\">".$row->studentfirstname.' '.$row->studentlastname.'</a>' : '';
+        $whodata = "<a href=\"{$CFG->wwwroot}/mod/scheduler/view.php?what=viewstudent&a={$row->schedulerid}&amp;studentid=$row->studentid&amp;course=$row->courseid\">".$row->studentfirstname.' '.$row->studentlastname.'</a>';
         $whomem = $row->studentmail;
-        $whatdata = ($whatmem != $row->notes) ? format_string($row->notes) : '';
+        $whatdata = format_string($row->notes);
         $whatmem = $row->notes;
         $dataset = array(
             $coursedata,
@@ -180,7 +180,6 @@ if ($numrecords){
             $whodata, 
             $row->studentdepartment, 
             $whatdata, 
-            $row->grade, 
             $row->appointmentnote);
         $table->add_data($dataset);		
     }

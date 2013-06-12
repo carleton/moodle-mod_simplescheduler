@@ -130,7 +130,8 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
         $starttimestr = ($starttime == $previoustime) ? '' : $starttime ;
         $endtimestr = ($endtime == $previousendtime) ? '' : $endtime ;
         $location = s($aSlot->appointmentlocation);
-        if ($aSlot->appointedbyme and !$aSlot->attended){
+        
+       if ($aSlot->appointedbyme){
             $teacher = $DB->get_record('user', array('id'=>$aSlot->teacherid));
             if ($scheduler->schedulermode == 'multi') {
             	$radio = "<input type=\"checkbox\" name=\"slotid[{$aSlot->id}]\" value=\"{$aSlot->id}\" checked=\"checked\" />\n";
@@ -185,7 +186,7 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
                 }
             }
             document.forms['appoint'].elements['appointgroup'].disabled = !enable;
-        }    
+        }  
         </script>
 <?php
 echo html_writer::table($table);
@@ -208,8 +209,7 @@ echo html_writer::table($table);
                         }
                      </script>
     <?php
-    
-if ($canappoint){
+
     /*
      Should add a note from the teacher to the student. 
      TODO : addfield into appointments
@@ -235,7 +235,6 @@ if ($canappoint){
             echo $OUTPUT->help_icon('appointagroup', 'scheduler');
         }
     }
-}
 
 echo '</form>';
 

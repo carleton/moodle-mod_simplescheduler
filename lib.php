@@ -38,7 +38,7 @@ function scheduler_add_instance($scheduler) {
     $id = $DB->insert_record('scheduler', $scheduler);
     $scheduler->id = $id;
     
-    scheduler_grade_item_update($scheduler);
+    //scheduler_grade_item_update($scheduler);
     
     
     return $id;

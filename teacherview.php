@@ -598,6 +598,8 @@ if ($slots){
         // slot is appointed
         $studentArray = array();
         if ($slot->isappointed) {
+        	$strrevoke = get_string('revoke', 'scheduler');
+        	$studentcolumn = '';
             $appointedstudents = $DB->get_records('scheduler_appointment', array('slotid'=>$slot->id));
             foreach($appointedstudents as $appstudent){
                 $student = $DB->get_record('user', array('id'=>$appstudent->studentid));
@@ -605,13 +607,18 @@ if ($slots){
                     $picture = $OUTPUT->user_picture($student);
                     $name = "<a href=\"view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$student->id}&amp;course={$scheduler->course}&amp;order=DESC\">".fullname($student).'</a>';
                 }
-                $studentArray[] = "$picture $name<br/>";
+                //$studentcolumn .= "$picture $name"; // need to work on formatting and link if we want pictures.
+                $studentcolumn .= "<p>$name";
+                $studentcolumn .= "<span style=\"font-size: x-small;\"><a href=\"view.php?what=revokeone&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;studentid={$student->id}&amp;page={$page}\" title=\"{$strrevoke}\"><img align=\"right\" src=\"{$CFG->wwwroot}/pix/t/delete.gif\" alt=\"{$strrevoke}\" /></a></span></p>";
+        
             }
         } else {
             // slot is free
-            $picture = '';
-            $name = '';
+            $studentcolumn = "None";
         }
+        
+        // lets make a form here that lets us add an eligible student
+        $studentArray[] = $studentcolumn;
         
         $actions = '<span style="font-size: x-small;">';
         if ($USER->id == $slot->teacherid || has_capability('mod/scheduler:manageallappointments', $context)){
@@ -622,7 +629,6 @@ if ($slots){
             $strnonexclusive = get_string('isnonexclusive', 'scheduler');
             $strallowgroup = get_string('allowgroup', 'scheduler');
             $strforbidgroup = get_string('forbidgroup', 'scheduler');
-            $strrevoke = get_string('revoke', 'scheduler');
             $strreused = get_string('setreused', 'scheduler');
             $strunreused = get_string('setunreused', 'scheduler');
             
@@ -640,9 +646,6 @@ if ($slots){
                         $actions .= "&nbsp;<a href=\"view.php?what=forbidgroup&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strforbidgroup}\"><img src=\"{$CFG->wwwroot}/pix/t/groupv.gif\" alt=\"{$strforbidgroup}\" /></a>";
                     }
                 }
-            }
-            if ($slot->isappointed){
-                $actions .= "&nbsp;<a href=\"view.php?what=revokeall&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strrevoke}\"><img src=\"{$CFG->wwwroot}/pix/s/no.gif\" alt=\"{$strrevoke}\" /></a>";
             }
         } else {
             // just signal group status
@@ -701,7 +704,7 @@ if ($sqlcount > 25){
 echo '</center>';
 
 // Instruction for teacher to click Seen box after appointment
-echo '<br /><center>' . get_string('markseen', 'scheduler') . '</center>';
+//echo '<br /><center>' . get_string('markseen', 'scheduler') . '</center>';
 
 } else if ($action != 'addsession') {
     /// There are no slots, should the teacher be asked to make some
@@ -741,10 +744,6 @@ if (!$students) {
     	$mtable->head[] = $field->title;
     	$mtable->align[] = 'LEFT';	    
 	}    
-    $mtable->head[] = $strseen;
-    $mtable->align[] = 'CENTER';
-    $mtable->head[] = $straction;
-    $mtable->align[] = 'CENTER';
     // end table header
     
     $mtable->data = array();
@@ -772,7 +771,6 @@ if (!$students) {
             $args['studentid'] = $student->id;
             $args['page'] = $page;
             $url = new moodle_url('view.php',$args);
-            $actions = $OUTPUT->single_button($url, get_string('schedule','scheduler'));
             
             $starttimenow = time();
             $appointment = new stdClass();
@@ -799,14 +797,12 @@ if (!$students) {
             $args['reuse'] = '0';
             $args['notes'] = '';
             $url = new moodle_url('view.php',$args);
-            $actions .= $OUTPUT->single_button($url, get_string('markasseennow','scheduler'));
             
             $newdata = array($picture, $name);
             $extrafields = scheduler_get_user_fields($student);
             foreach ($extrafields as $field) {
                 $newdata[] = $field->value;
             }                
-            $newdata[] = $actions; 
             $mtable->data[] = $newdata;
         }
     }
