@@ -187,8 +187,9 @@ switch ($action) {
         if($appointments){
             foreach ($appointments as $appointment){ // insert updated
                 $appointment->slotid = $slot->id; // now we know !!
+                $appointment->attended = 0;
                 $DB->insert_record('scheduler_appointment', $appointment);
-		        scheduler_update_grades($scheduler, $appointment->studentid);
+		        //scheduler_update_grades($scheduler, $appointment->studentid);
             }
         }
         

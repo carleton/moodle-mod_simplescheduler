@@ -374,7 +374,7 @@ function scheduler_delete_appointment($appointmentid, $slot=null, $scheduler=nul
         if (!$scheduler){ // fetch optimization
             $scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
         }
-        scheduler_update_grades($scheduler, $oldrecord->studentid);        
+        // scheduler_update_grades($scheduler, $oldrecord->studentid);        
         // not reusable slot. Delete it if slot is too near and has no more appointments.
         if ($slot->reuse == 0) {
             $consumed = scheduler_get_consumed($slot->schedulerid, $slot->starttime, $slot->starttime + $slot->duration * 60);

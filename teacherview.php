@@ -265,7 +265,6 @@ if ($action == 'schedule') {
             $form->availableslots = scheduler_get_available_slots($studentid, $scheduler->id);
             $appointment->studentid = $studentid;
             $appointment->attended = optional_param('attended', 0, PARAM_INT);
-            $appointment->grade = optional_param('grade', 0, PARAM_INT);
             $appointment->appointmentnote = optional_param('appointmentnote', '', PARAM_TEXT);
             $appointment->timecreated = time();
             $appointment->timemodified = time();
@@ -299,11 +298,9 @@ if ($action == 'schedule') {
             get_slot_data($form);
             $form->availableslots = scheduler_get_available_slots($form->studentid, $scheduler->id);
             $form->studentid = required_param('studentid', PARAM_INT);
-            $form->seen = optional_param('seen', 0, PARAM_INT);
             $form->slotid = optional_param('slotid', -1, PARAM_INT);
         } else {
             $form->studentid = required_param('studentid', PARAM_INT);
-            $form->seen = optional_param('seen', 0, PARAM_INT);
             
             /// getting available slots
             $form->availableslots = scheduler_get_available_slots($form->studentid, $scheduler->id);
@@ -321,8 +318,6 @@ if ($action == 'schedule') {
             $appointment->slotid = -1;
             $appointment->studentid = $form->studentid;
             $appointment->appointmentnote = '';
-            $appointment->attended = $form->seen;
-            $appointment->grade = '';
             $appointment->timecreated = time();
             $appointment->timemodified = time();
             $form->appointments[$form->studentid] = $appointment;
@@ -382,7 +377,6 @@ if ($action == 'schedulegroup') {
                     $appointment->studentid = $member->id;
                 }
                 $appointment->attended = optional_param('attended', 0, PARAM_INT);
-                $appointment->grade = optional_param('grade', 0, PARAM_INT);
                 $appointment->appointmentnote = optional_param('appointmentnote', '', PARAM_TEXT);
                 $appointment->timecreated = time();
                 $appointment->timemodified = time();
@@ -416,11 +410,9 @@ if ($action == 'schedulegroup') {
             get_slot_data($form);
             $form->availableslots = scheduler_get_unappointed_slots($scheduler->id);
             $form->groupid = required_param('groupid', PARAM_INT);
-            $form->seen = optional_param('seen', 0, PARAM_INT);
             $form->slotid = optional_param('slotid', -1, PARAM_INT);
         } else {
             $form->groupid = required_param('groupid', PARAM_INT);
-            $form->seen = optional_param('seen', 0, PARAM_INT);
             
             /// getting available slots
             $form->availableslots = scheduler_get_unappointed_slots($scheduler->id);
@@ -445,8 +437,6 @@ if ($action == 'schedulegroup') {
                     $appointment->studentid = $member->id;
                 }
                 $appointment->appointmentnote = '';
-                $appointment->attended = $form->seen;
-                $appointment->grade = '';
                 $appointment->timecreated = time();
                 $appointment->timemodified = time();
                 $form->appointments[$appointment->studentid] = $appointment;
@@ -584,11 +574,11 @@ if ($slots){
     // prepare slots table
     $table = new html_table();
     if ($page == 'myappointments'){
-        $table->head  = array ('', $strdate, $strstart, $strend, $strstudents, $straction);
-        $table->align = array ('CENTER', 'LEFT', 'LEFT', 'CENTER', 'CENTER', 'CENTER', 'LEFT', 'CENTER');
+        $table->head  = array ($strdate, $strstart, $strend, $strstudents, $straction);
+        $table->align = array ('LEFT', 'LEFT', 'LEFT', 'LEFT', 'LEFT');
     } else {
-        $table->head  = array ('', $strdate, $strstart, $strend, $strstudents, s(scheduler_get_teacher_name($scheduler)), $straction);
-        $table->align = array ('CENTER', 'LEFT', 'LEFT', 'CENTER', 'CENTER', 'CENTER', 'LEFT', 'LEFT', 'CENTER');
+        $table->head  = array ($strdate, $strstart, $strend, $strstudents, s(scheduler_get_teacher_name($scheduler)), $straction);
+        $table->align = array ('LEFT', 'LEFT', 'LEFT', 'LEFT', 'LEFT', 'LEFT');
     }
     $table->width = '90%';
     $offsetdatemem = '';
@@ -605,53 +595,22 @@ if ($slots){
         $offsettime = scheduler_usertime($slot->starttime,1);
         $endtime = scheduler_usertime($slot->starttime + ($slot->duration * 60),1);
         
-        /// make a slot select box
-        if ($USER->id == $slot->teacherid || has_capability('mod/scheduler:manageallappointments', $context)){
-            $selectcheck = "<input type=\"checkbox\" id=\"sel_{$slot->id}\" name=\"sel_{$slot->id}\" onclick=\"document.forms['deleteslotsform'].items.value = toggleListState(document.forms['deleteslotsform'].items.value, 'sel_{$slot->id}', '{$slot->id}');\" />";
-        } else {
-            $selectcheck = '';
-        }
-        
         // slot is appointed
         $studentArray = array();
         if ($slot->isappointed) {
             $appointedstudents = $DB->get_records('scheduler_appointment', array('slotid'=>$slot->id));
-            $studentArray[] = "<form name=\"appointementseen_{$slot->id}\" method=\"post\" action=\"view.php\">";
-            $studentArray[] = "<input type=\"hidden\" name=\"id\" value=\"".$cm->id."\" />";
-            $studentArray[] = "<input type=\"hidden\" name=\"slotid\" value=\"".$slot->id."\" />";
-            $studentArray[] = "<input type=\"hidden\" name=\"what\" value=\"saveseen\" />";
-            $studentArray[] = "<input type=\"hidden\" name=\"page\" value=\"".$page."\" />";
             foreach($appointedstudents as $appstudent){
                 $student = $DB->get_record('user', array('id'=>$appstudent->studentid));
                 if ($student) {
                     $picture = $OUTPUT->user_picture($student);
                     $name = "<a href=\"view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$student->id}&amp;course={$scheduler->course}&amp;order=DESC\">".fullname($student).'</a>';
                 }
-                
-                
-                /// formatting grade
-                $grade=scheduler_format_grade($scheduler,$appstudent->grade,true);
-                
-                if ($USER->id == $slot->teacherid || has_capability('mod/scheduler:manageallappointments', $context)){
-                    $checked = ($appstudent->attended) ? 'checked="checked"' : '' ;
-                    $checkbox = "<input type=\"checkbox\" name=\"seen[]\" value=\"{$appstudent->id}\" {$checked} />";
-                } else {
-                    // same thing but no link
-                    if ($appstudent->attended == 1) {
-                        $checkbox = '<img src="pix/ticked.gif" border="0">';
-                    } else {
-                        $checkbox = '<img src="pix/unticked.gif" border="0">';
-                    }
-                }
-                $studentArray[] = "$checkbox $picture $name $grade<br/>";
+                $studentArray[] = "$picture $name<br/>";
             }
-            $studentArray[] = "<a href=\"javascript:document.forms['appointementseen_{$slot->id}'].submit();\">".get_string('saveseen','scheduler').'</a>';
-            $studentArray[] = "</form>";
         } else {
             // slot is free
             $picture = '';
             $name = '';
-            $checkbox = '';
         }
         
         $actions = '<span style="font-size: x-small;">';
@@ -711,10 +670,10 @@ if ($slots){
         }
         $actions .= '</span>';
         if($page == 'myappointments'){
-            $table->data[] = array ($selectcheck, ($offsetdate == $offsetdatemem) ? '' : $offsetdate, $offsettime, $endtime, implode("\n",$studentArray), $actions);
+            $table->data[] = array (($offsetdate == $offsetdatemem) ? '' : $offsetdate, $offsettime, $endtime, implode("\n",$studentArray), $actions);
         } else {
             $teacherlink = "<a href=\"$CFG->wwwroot/user/view.php?id={$slot->teacherid}\">".fullname($DB->get_record('user', array('id'=> $slot->teacherid)))."</a>";
-            $table->data[] = array ($selectcheck, ($offsetdate == $offsetdatemem) ? '' : $offsetdate, $offsettime, $endtime, implode("\n",$studentArray), $teacherlink, $actions);
+            $table->data[] = array (($offsetdate == $offsetdatemem) ? '' : $offsetdate, $offsettime, $endtime, implode("\n",$studentArray), $teacherlink, $actions);
         }
         $offsetdatemem = $offsetdate;
     }
@@ -724,21 +683,7 @@ if ($slots){
     echo html_writer::table($table);
     ?>
 <center>
-<table width="90%">
-    <tr>
-        <td align="left">
-            <script src="<?php echo "{$CFG->wwwroot}/mod/scheduler/scripts/listlib.js" ?>"></script>
-            <form name="deleteslotsform" style="display : inline">
-            <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
-            <input type="hidden" name="page" value="<?php echo $page ?>" />
-            <input type="hidden" name="what" value="deleteslots" />
-            <input type="hidden" name="items" value="" />
-            </form>
-            <a href="javascript:document.forms['deleteslotsform'].submit()"><?php print_string('deleteselection','scheduler') ?></a>
-            <br />
-        </td>
-    </tr>
-</table>
+
 
 <?php
 if ($sqlcount > 25){
@@ -822,10 +767,6 @@ if (!$students) {
             }
             
             
-            $checkbox = "<a href=\"view.php?what=schedule&amp;id={$cm->id}&amp;studentid={$student->id}&amp;page={$page}&amp;seen=1\">";
-            $checkbox .= '<img src="pix/unticked.gif" border="0" />';
-            $checkbox .= '</a>';
-            
             $args['what'] = 'schedule';
             $args['id'] = $cm->id;
             $args['studentid'] = $student->id;
@@ -839,7 +780,6 @@ if (!$students) {
             $appointment->studentid = $student->id;
             $appointment->appointmentnote = '';
             $appointment->attended = 1;
-            $appointment->grade = null;
             $appointment->notes = '';
             $appointment->timecreated = time();
             $appointment->timemodified = time();
@@ -866,7 +806,6 @@ if (!$students) {
             foreach ($extrafields as $field) {
                 $newdata[] = $field->value;
             }                
-            $newdata[] = $checkbox;
             $newdata[] = $actions; 
             $mtable->data[] = $newdata;
         }

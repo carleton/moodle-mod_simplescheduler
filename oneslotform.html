@@ -1,5 +1,6 @@
 <!-- This page defines the form to move an appointment slot -->
 <!-- it is used from view.php -->
+<?php echo $action; ?>
 
 <?php $usehtmleditor = can_use_html_editor(); ?>
 
@@ -189,43 +190,6 @@ if (has_capability('mod/scheduler:canscheduletootherteachers', $context)){
     <td colspan="2">
 <?php 
 echo $OUTPUT->box_start(get_string('appointments', 'scheduler'), 'center');
-if (!empty($form->appointments) && count($form->appointments)){
-    echo "
-        <script type=\"text/javascript\">
-            function deleteAppointment(studentid){
-                document.forms['add'].subaction.value = 'doremoveappointed';
-                document.forms['add'].studentid.value = studentid;
-                document.forms['add'].what.value = '{$action}';
-                document.forms['add'].submit();
-            }
-
-            function updateAppointment(studentid){
-                document.forms['add'].subaction.value = 'updateappointed';
-                document.forms['add'].studentid.value = studentid;
-                document.forms['add'].what.value = '{$action}';
-                document.forms['add'].submit();
-            }
-        </script>
-    ";
-    $table = new html_table();
-    $table->head  = array ('', get_string('students'), $strseen, $strnote, $strgrade, $straction);
-    $table->align = array ('LEFT', 'LEFT', 'CENTER', 'LEFT', 'CENTER', 'RIGHT');
-    $table->width = '';
-    foreach($form->appointments as $anAppointment){
-        $user = $DB->get_record('user', array('id'=>$anAppointment->studentid));
-        $gradetext = scheduler_format_grade($scheduler,$anAppointment->grade); 
-        $attended = $anAppointment->attended ? '<img src="pix/ticked.gif" border="0">' : '<img src="pix/unticked.gif" border="0">' ;
-        $cmds = "<a href=\"javascript:updateAppointment('{$anAppointment->studentid}')\" title=\"".get_string('edit')."\"><img src=\"{$CFG->wwwroot}/pix/t/edit.gif\"></a> ";
-        $cmds .= "<a href=\"javascript:deleteAppointment('{$anAppointment->studentid}')\" title=\"".get_string('remove')."\"><img src=\"{$CFG->wwwroot}/pix/t/delete.gif\"></a>";
-        $table->data[] = array('', fullname($user), $attended, $anAppointment->appointmentnote, $gradetext, $cmds);
-    }
-    echo html_writer::table($table);
-} else {
-    print_string('noappointments', 'scheduler');
-}
-echo '<br />';
-$hiddenstate = ((count($form->appointments) < $form->exclusivity and $form->exclusivity > 0) || !$form->exclusivity) ? "style=\"visibility:visible\"" : "style=\"visibility:hidden\"" ;
-echo "<div id=\"addappointment\" $hiddenstate ><a href=\"javascript:document.forms['add'].what.value = '{$action}' ;document.forms['add'].subaction.value = 'addappointed' ;document.forms['add'].submit();\">".get_string('appointsomeone','scheduler').'</a></div>';
 echo $OUTPUT->box_end();
 ?>
         </td>

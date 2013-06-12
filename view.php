@@ -96,6 +96,7 @@ echo $OUTPUT->header();
 /// route to screen
 
 // teacher side
+echo $action;
 if (has_capability('mod/scheduler:manage', $context)) {
     if ($action == 'viewstatistics'){
         include $CFG->dirroot.'/mod/scheduler/viewstatistics.php';

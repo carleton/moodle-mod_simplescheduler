@@ -52,7 +52,6 @@ $sql = "
     a.studentid,
     a.attended,
     a.appointmentnote,
-    a.grade,
     a.timemodified as apptimemodified
     FROM
     {scheduler_slots} s,
@@ -76,8 +75,8 @@ if ($slots = $DB->get_records_sql($sql, array($scheduler->id, $studentid, $order
     /// print page header and prepare table headers
     if ($page == 'appointments'){
         echo $OUTPUT->heading(get_string('slots' ,'scheduler'));
-        $table->head  = array ($strdate, $strstart, $strend, $strseen, $strnote, $strgrade, s(scheduler_get_teacher_name($scheduler)));
-        $table->align = array ('LEFT', 'LEFT', 'CENTER', 'CENTER', 'LEFT', 'CENTER', 'CENTER');
+        $table->head  = array ($strdate, $strstart, $strend, $strnote, s(scheduler_get_teacher_name($scheduler)));
+        $table->align = array ('LEFT', 'LEFT', 'LEFT', 'LEFT', 'LEFT');
         $table->width = '80%';
     } else {
         echo $OUTPUT->heading(get_string('comments' ,'scheduler'));
@@ -97,19 +96,12 @@ if ($slots = $DB->get_records_sql($sql, array($scheduler->id, $studentid, $order
             //display appointments
             if ($slot->attended == 0){
             	$teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
-                $table->data[] = array ($startdate, $starttime, $endtime, "<img src=\"pix/unticked.gif\" border=\"0\" />", $slot->appointmentnote, scheduler_format_grade($scheduler,$slot->grade), fullname($teacher));
+                $table->data[] = array ($startdate, $starttime, $endtime, $slot->appointmentnote, fullname($teacher));
             }
             else {
                 $slot->appointmentnote .= "<br/><span class=\"timelabel\">[".userdate($slot->apptimemodified)."]</span>";
-                if (($scheduler->scale !=0 ) && (($slot->teacherid == $USER->id) || $CFG->scheduler_allteachersgrading)){
-                    $grade = scheduler_make_grading_menu($scheduler, 'gr'.$slot->appid, $slot->grade, true);
-                }
-                else{
-                    $grade = scheduler_format_grade($scheduler,$slot->grade);
-                }
-                
                 $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
-                $table->data[] = array ($startdate, $starttime, $endtime, "<img src=\"pix/ticked.gif\" border=\"0\" />", $slot->appointmentnote, $grade.$distributecheck, fullname($teacher));
+                $table->data[] = array ($startdate, $starttime, $endtime, $slot->appointmentnote, fullname($teacher));
             }
         } else {
             if ($DB->count_records('scheduler_appointment', array('slotid' => $slot->id)) > 1){
@@ -155,9 +147,6 @@ if ($slots = $DB->get_records_sql($sql, array($scheduler->id, $studentid, $order
     }
     echo html_writer::table($table);
     if ($page == 'appointments'){
-        if ($scheduler->scale != 0) {
-            echo "<p><center><input type=\"submit\" name=\"go_btn\" value=\"".get_string('updategrades', 'scheduler')."\" />";
-        }
         echo '</form>';
     }
 }
