@@ -17,7 +17,7 @@ if ($displaydeletebuttons){
     </tr>
     <tr>
         <td>
-            <form action="view.php" method="post" name="addsessionform">
+            <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="addsessionform">
                 <input type="hidden" name="what" value="addsession" />
                 <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
                 <input type="hidden" name="page" value="<?php p($page) ?>" />
@@ -25,7 +25,7 @@ if ($displaydeletebuttons){
             </form>
          </td>
          <td>
-            <form action="view.php" method="post" name="addsingleform">
+            <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="addsingleform">
                 <input type="hidden" name="what" value="addslot" />
                 <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
                 <input type="hidden" name="page" value="<?php p($page) ?>" />
@@ -37,7 +37,7 @@ if ($displaydeletebuttons){
     if (has_capability('mod/scheduler:manageallappointments', $context)){
 ?>
          <td>
-            <form action="view.php" method="post" name="deleteallform">
+            <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="deleteallform">
                 <script type="text/javascript">
                     function confirmdeletionall(){
                         if (confirm('<?php print_string('confirmdelete', 'scheduler') ?>')){
@@ -52,7 +52,7 @@ if ($displaydeletebuttons){
             </form>
          </td>
          <td>
-            <form action="view.php" method="post" name="deleteallunusedform">
+            <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="deleteallunusedform">
                 <script type="text/javascript">
                     function confirmdeletionallunused(){
                         if (confirm('<?php print_string('confirmdelete', 'scheduler') ?>')){
@@ -70,7 +70,7 @@ if ($displaydeletebuttons){
     }
 ?>
          <td>
-            <form action="view.php" method="post" name="deleteunusedform">
+            <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="deleteunusedform">
                 <script type="text/javascript">
                     function confirmdeletionunused(){
                         if (confirm('<?php print_string('confirmdelete', 'scheduler') ?>')){
@@ -85,7 +85,7 @@ if ($displaydeletebuttons){
             </form>
          </td>
          <td>
-            <form action="view.php" method="post" name="deletemineform">
+            <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="deletemineform">
                 <script type="text/javascript">
                     function confirmdeletionmine(){
                         if (confirm('<?php print_string('confirmdelete', 'scheduler') ?>')){

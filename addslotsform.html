@@ -1,7 +1,7 @@
 <!-- This page defines the form to add an appointment session -->
 <!-- it is used from view.php -->
 
-<form name="add" method="post" action="view.php">
+<form name="add" method="post" action="view.php?id=<?php p($cm->id) ?>">
 <input type="hidden" name="what" value="doaddsession" />
 <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
 <input type="hidden" name="page" value="<?php p($page) ?>" />
@@ -131,15 +131,6 @@ if (has_capability('mod/scheduler:canscheduletootherteachers', $context)){
                     $exclusivemenu[(string)$i] = $i;
                 }
                 echo html_writer::select($exclusivemenu, 'exclusivity', $form->exclusivity);
-            ?>
-        </td>
-    </tr>
-    <tr valign="top">
-        <td align="right"><b><?php  print_string('reuse', 'scheduler') ?>:</b></td>
-        <td align="left">
-            <?php
-                echo html_writer::select_yes_no('reuse');
-                echo $OUTPUT->help_icon('reuse', 'scheduler');
             ?>
         </td>
     </tr>

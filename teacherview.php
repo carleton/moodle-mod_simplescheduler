@@ -7,6 +7,10 @@
  * @subpackage scheduler
  * @copyright  2011 Henning Bostelmann and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * @todo remove centering tags
+ * @todo add interface for assigning students to slots
+ * @todo add "show past slots" toggle
  */
 
 
@@ -31,7 +35,6 @@ function get_slot_data(&$form){
         $form->starttime = make_timestamp($form->year, $form->month, $form->day, $form->hour, $form->minute);
     }
     $form->exclusivity = required_param('exclusivity', PARAM_INT);
-    $form->reuse = required_param('reuse', PARAM_INT);
     $form->duration = required_param('duration', PARAM_INT);
     $form->notes = required_param('notes', PARAM_TEXT);
     // if no teacher specified, the current user (who edits the slot) is assumed to be the teacher
@@ -72,7 +75,6 @@ function get_session_data(&$form){
     $form->sunday = optional_param('sunday', 0, PARAM_INT);
     $form->forcewhenoverlap = required_param('forcewhenoverlap', PARAM_INT);
     $form->exclusivity = required_param('exclusivity', PARAM_INT);
-    $form->reuse = required_param('reuse', PARAM_INT);
     $form->divide = optional_param('divide', 0, PARAM_INT);
     $form->duration = optional_param('duration', 15, PARAM_INT);
     // if no teacher specified, the current user (who edits the slot) is assumed to be the teacher
@@ -98,7 +100,7 @@ if ($action){
 
 /************************************ View : New single slot form ****************************************/
 if ($action == 'addslot'){
-    echo $OUTPUT->heading(get_string('addsingleslot', 'scheduler'));
+	echo $OUTPUT->heading(get_string('addsingleslot', 'scheduler'));
     $form = new stdClass();
     if (!empty($errors)) {
         get_slot_data($form);
@@ -114,7 +116,6 @@ if ($action == 'addslot'){
         if (empty($form->appointments)) $form->appointments = array();
         $form->starttime = time();
         $form->duration = 15;
-        $form->reuse = 1;
         $form->exclusivity = 1;
         $form->hideuntil = $scheduler->timemodified; // supposed being in the past so slot is visible
         $form->notes = '';
@@ -225,7 +226,6 @@ if ($action == 'addsession') {
         $form->teacherid = $USER->id;
         $form->exclusivity = 1;
         $form->duration = $scheduler->defaultslotduration;
-        $form->reuse = 1;
         $form->monday = 1;
         $form->tuesday = 1;
         $form->wednesday = 1;
@@ -277,7 +277,6 @@ if ($action == 'schedule') {
             $form->slotid = 0;
             $form->starttime = time();
             $form->duration = 15;
-            $form->reuse = 1;
             $form->exclusivity = 1;
             $form->hideuntil = $scheduler->timemodified; // supposed being in the past so slot is visible
             $form->notes = '';
@@ -307,7 +306,6 @@ if ($action == 'schedule') {
             $form->what = 'doaddupdateslot' ;
             $form->starttime = time();
             $form->duration = $scheduler->defaultslotduration;
-            $form->reuse = 1;
             $form->exclusivity = 1;
             $form->hideuntil = $scheduler->timemodified; // supposed being in the past so slot is visible
             $form->notes = '';
@@ -389,7 +387,6 @@ if ($action == 'schedulegroup') {
             $form->slotid = 0;
             $form->starttime = time();
             $form->duration = 15;
-            $form->reuse = 1;
             $form->exclusivity = 1;
             $form->hideuntil = $scheduler->timemodified; // supposed being in the past so slot is visible
             $form->notes = '';
@@ -419,7 +416,6 @@ if ($action == 'schedulegroup') {
             $form->what = 'doaddupdateslot' ;
             $form->starttime = time();
             $form->duration = $scheduler->defaultslotduration;
-            $form->reuse = 1;
             $form->hideuntil = $scheduler->timemodified; // supposed being in the past so slot is visible
             $form->notes = '';
             $form->teacherid = $USER->id;
@@ -557,8 +553,11 @@ $strdownloadexcel = get_string('downloadexcel', 'scheduler');
 if ($slots){
     // print instructions and button for creating slots
     echo $OUTPUT->box_start('center', '', '');
-    print_string('addslot', 'scheduler');
     
+    // these instructions are too redundant and in prime real estate - the buttons themselves are quite explanatory
+    //print_string('addslot', 'scheduler');
+    
+    echo '<center>';
     // print add session button
     $strdeleteallslots = get_string('deleteallslots', 'scheduler');
     $strdeleteallunusedslots = get_string('deleteallunusedslots', 'scheduler');
@@ -566,7 +565,6 @@ if ($slots){
     $strdeletemyslots = get_string('deletemyslots', 'scheduler');
     $strstudents = get_string('students', 'scheduler');
     $displaydeletebuttons = 1;
-    echo '<center>';
     include $CFG->dirroot.'/mod/scheduler/commands.html';
     echo '</center>';
     echo $OUTPUT->box_end();
@@ -583,11 +581,12 @@ if ($slots){
     $table->width = '90%';
     $offsetdatemem = '';
     foreach($slots as $slot) {
-        if (!$slot->isappointed && $slot->starttime + (60 * $slot->duration) < time()) {
+        
+        //if (!$slot->isappointed && $slot->starttime + (60 * $slot->duration) < time()) {
             // This slot is in the past and has not been chosen by any student, so delete
-            $DB->delete_records('scheduler_slots', array('id'=>$slot->id));
-            continue;
-        }
+         //   $DB->delete_records('scheduler_slots', array('id'=>$slot->id));
+          //  continue;
+        //}
         
         /// Parameter $local in scheduler_userdate and scheduler_usertime added by power-web.at
         /// When local Time or Date is needed the $local Param must be set to 1
@@ -629,8 +628,6 @@ if ($slots){
             $strnonexclusive = get_string('isnonexclusive', 'scheduler');
             $strallowgroup = get_string('allowgroup', 'scheduler');
             $strforbidgroup = get_string('forbidgroup', 'scheduler');
-            $strreused = get_string('setreused', 'scheduler');
-            $strunreused = get_string('setunreused', 'scheduler');
             
             $actions .= "<a href=\"view.php?what=deleteslot&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strdelete}\"><img src=\"{$CFG->wwwroot}/pix/t/delete.gif\" alt=\"{$strdelete}\" /></a>";
             $actions .= "&nbsp;<a href=\"view.php?what=updateslot&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$stredit}\"><img src=\"{$CFG->wwwroot}/pix/t/edit.gif\" alt=\"{$stredit}\" /></a>";
@@ -665,11 +662,6 @@ if ($slots){
         }
         if ($slot->exclusivity > 1){
             $actions .= ' ('.$slot->exclusivity.')';
-        }
-        if ($slot->reuse){
-            $actions .= "&nbsp;<a href=\"view.php?what=unreuse&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strunreused}\" ><img src=\"pix/volatile_shadow.gif\" alt=\"{$strunreused}\" border=\"0\" /></a>";
-        } else {
-            $actions .= "&nbsp;<a href=\"view.php?what=reuse&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strreused}\" ><img src=\"pix/volatile.gif\" alt=\"{$strreused}\" border=\"0\" /></a>";
         }
         $actions .= '</span>';
         if($page == 'myappointments'){
@@ -709,10 +701,12 @@ echo '</center>';
 } else if ($action != 'addsession') {
     /// There are no slots, should the teacher be asked to make some
     echo $OUTPUT->box_start('center', '', '');
-    print_string('welcomenewteacher', 'scheduler');
+    
+    // these instructions are too redundant - the buttons themselves are quite explanatory
+    //print_string('welcomenewteacher', 'scheduler');
     echo '<center>';
     $displaydeletebuttons = 0;
-    include "commands.html";
+    include $CFG->dirroot.'/mod/scheduler/commands.html';
     echo '</center>';
     echo $OUTPUT->box_end();
 }
@@ -794,7 +788,6 @@ if (!$students) {
             $args['hideuntil'] = $scheduler->timemodified;
             $args['appointmentlocation'] = '';
             $args['exclusivity'] = '1';
-            $args['reuse'] = '0';
             $args['notes'] = '';
             $url = new moodle_url('view.php',$args);
             

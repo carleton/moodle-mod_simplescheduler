@@ -138,7 +138,6 @@ switch ($action) {
                     $options['exclusivity'] = $data->exclusivity;
                     $options['appointments'] = serialize($appointments);
                     $options['notes'] = $data->notes;
-                    $options['reuse'] = $data->reuse;
                     $options['appointmentlocation'] = $data->appointmentlocation;
                     echo $OUTPUT->single_button(new moodle_url('view.php',$options), get_string('deletetheseslots', 'scheduler'));
                     echo $OUTPUT->box_end(); 
@@ -173,7 +172,6 @@ switch ($action) {
         $slot->notes = $data->notes;
         $slot->appointmentlocation = $data->appointmentlocation;
         $slot->hideuntil = $data->hideuntil;
-        $slot->reuse = $data->reuse;
         $slot->emaildate = 0;
         if (!$slotid){ // add it
             $slot->id = $DB->insert_record('scheduler_slots', $slot);
@@ -240,8 +238,7 @@ switch ($action) {
         $slot = new stdClass();
         $slot->appointmentlocation = $data->appointmentlocation;
         $slot->exclusivity = $data->exclusivity;
-        $slot->reuse = $data->reuse;
-        $slot->duration = $data->duration;
+       $slot->duration = $data->duration;
         $slot->schedulerid = $scheduler->id;
         $slot->timemodified = time();
         $slot->teacherid = $data->teacherid;
@@ -372,7 +369,6 @@ switch ($action) {
     /************************************ Deleting a slot ***********************************************/
     case 'deleteslot': {
         $slotid = required_param('slotid', PARAM_INT);
-        
         scheduler_delete_slot($slotid, $scheduler);
         break;
     }
@@ -385,45 +381,9 @@ switch ($action) {
         }
         break;
     }
-    /************************************ Revoking all appointments to a slot ***************************************/
-    case 'revokeall': {
-        $slotid = required_param('slotid', PARAM_INT);
-        
-        if ($slot = $DB->get_record('scheduler_slots', array('id' => $slotid))){
-            // unassign student to the slot
-            $oldstudents = $DB->get_records('scheduler_appointment', array('slotid' => $slot->id), '', 'id,studentid');
-            
-            if ($oldstudents){            
-                foreach($oldstudents as $oldstudent){
-                    scheduler_delete_appointment($oldstudent->id, $slot, $scheduler);
-                }
-            }
-            
-            // delete subsequent event
-            scheduler_delete_calendar_events($slot);
-            
-            // notify student
-            if ($scheduler->allownotifications && $oldstudents){
-                foreach($oldstudents as $oldstudent){
-                    include_once($CFG->dirroot.'/mod/scheduler/mailtemplatelib.php');
-                    
-                    $student = $DB->get_record('user', array('id'=>$oldstudent->studentid));
-                    $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
-                    
-                    $vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
-                    scheduler_send_email_from_template($student, $teacher, $COURSE, 'cancelledbyteacher', 'teachercancelled', $vars, 'scheduler');
-                }
-            }
-            
-            if (!$slot->reuse and $slot->starttime > time() - $scheduler->reuseguardtime){
-                $DB->delete_records('scheduler_slots', array('id'=>$slot->id));
-            }
-        }
-        break;
-    }
     /************************************ Revoking one appointment from a slot ***************************************
      * @todo deleting and creating the calendar event is not efficient - we should add support for a student id.
-     * @todo notifications should move into lib and should the deletion logic.
+     * @todo notifications should move into lib as should the deletion logic probably.
 	 */
     case 'revokeone': {
         $slotid = required_param('slotid', PARAM_INT);
@@ -476,38 +436,13 @@ switch ($action) {
         break;
     }
     
-    /************************************ Toggling reuse on ***************************************/
-    case 'reuse':{
-        $slotid = required_param('slotid', PARAM_INT);
-        $slot = new stdClass();
-        $slot->id = $slotid;
-        $slot->reuse = 1;
-        $DB->update_record('scheduler_slots', $slot);
-        break;
-    }
-    
-    /************************************ Toggling reuse off ***************************************/
-    case 'unreuse':{
-        $slotid = required_param('slotid', PARAM_INT);
-        $slot = new stdClass();
-        $slot->id = $slotid;
-        $slot->reuse = 0;
-        $DB->update_record('scheduler_slots', $slot);
-        break;
-    }
-    
     /************************************ Deleting all slots ***************************************************/
     case 'deleteall':{
      	if (has_capability('mod/scheduler:manageallappointments', $context)){
 			if ($slots = $DB->get_records('scheduler_slots', array('schedulerid' => $cm->instance))){
 				foreach($slots as $aSlot){
-					scheduler_delete_calendar_events($aSlot);
-				}
-				list($usql, $params) = $DB->get_in_or_equal(array_keys($slots));
-				$DB->delete_records_select('scheduler_appointment', " slotid $usql ", $params);
-				$DB->delete_records('scheduler_slots', array('schedulerid' => $cm->instance));
-				unset($slots);
-				//scheduler_update_grades($scheduler);            
+					scheduler_delete_slot($aSlot->id, $scheduler);
+				}           
 			}
 		}      
         break;

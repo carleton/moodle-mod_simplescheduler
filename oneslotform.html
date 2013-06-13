@@ -4,7 +4,7 @@
 
 <?php $usehtmleditor = can_use_html_editor(); ?>
 
-<form name="add" method="post" action="view.php">
+<form name="add" method="post" action="view.php?id=<?php p($cm->id) ?>">
 <input type="hidden" name="what" value="<?php p($form->what) ?>" />
 <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
 <input type="hidden" name="page" value="<?php p($page) ?>" />
@@ -107,17 +107,6 @@ if($action == 'schedule' or $action == 'schedulegroup'){
             echo html_writer::select($exclusivemenu, 'exclusivity', $form->exclusivity, array(), array('id'=>'exclusivechooser'));
             
             echo $OUTPUT->help_icon('exclusivity', 'scheduler', get_string('groupsession', 'scheduler'));
-        ?>
-    </td>
-</tr>
-<tr valign="top">
-    <td align="right"><b><?php print_string('reuse', 'scheduler') ?>:</b></td>
-    <td align="left">
-        <?php
-            $reusemenu[0] = get_string('no');
-            $reusemenu[1] = get_string('yes');
-            echo html_writer::select_yes_no('reuse',$form->reuse); 
-            echo $OUTPUT->help_icon('reuse', 'scheduler');
         ?>
     </td>
 </tr>

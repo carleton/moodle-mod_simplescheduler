@@ -9,6 +9,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * @todo deleteme!
+ */
 defined('MOODLE_INTERNAL') || die();
 
 switch($subaction){
