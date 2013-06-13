@@ -423,6 +423,7 @@ switch ($action) {
     }
     /************************************ Revoking one appointment from a slot ***************************************
      * @todo deleting and creating the calendar event is not efficient - we should add support for a student id.
+     * @todo notifications should move into lib and should the deletion logic.
 	 */
     case 'revokeone': {
         $slotid = required_param('slotid', PARAM_INT);
@@ -436,7 +437,7 @@ switch ($action) {
             if ($oldstudent) {
             	$student_obj = reset($oldstudent);            
                 scheduler_delete_appointment($student_obj->id, $slot, $scheduler);
-            
+                
             	// delete and recreate events for the slot
             	scheduler_delete_calendar_events($slot);
             	scheduler_add_update_calendar_events($slot, $COURSE);
@@ -451,12 +452,6 @@ switch ($action) {
                 	$vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
                 	scheduler_send_email_from_template($student, $teacher, $COURSE, 'cancelledbyteacher', 'teachercancelled', $vars, 'scheduler');
             	}
-            }
-            if (!$slot->reuse and $slot->starttime > time() - $scheduler->reuseguardtime){
-            	// lets only do this if the slot is empty
-            	if (!$DB->records_exist('scheduler_appointment', array('slotid' => $slot->id))){
-                	$DB->delete_records('scheduler_slots', array('id'=>$slot->id));
-                }
             }
         }
         break;

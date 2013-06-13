@@ -312,26 +312,51 @@ function scheduler_get_appointed($slotid){
 
 /**
  * fully deletes a slot with all dependancies
+ *
+ * - deletes calendar events
+ * - sends notifications to students signed up for the slot (if enabled)
+ * - deletes the schedules slot
+ * - deletes all appointments
+ *
+ * @todo instead of using DB directly this should call scheduler_delete_appointment ... we have logic in too many places.
+ *
  * @param int slotid
  * @param stdClass $scheduler (optional)
  * @uses $DB
  */
-function scheduler_delete_slot($slotid, $scheduler=null){
-    global $DB;
+function scheduler_delete_slot($slotid, $scheduler=null, $suppress_notify=false){
+    global $CFG, $DB;
     
     if ($slot = $DB->get_record('scheduler_slots', array('id' => $slotid))) {
         scheduler_delete_calendar_events($slot);
-    }
-    $DB->delete_records('scheduler_slots', array('id' => $slotid));
-    $DB->delete_records('scheduler_appointment', array('slotid' => $slotid));
-    
-    if ($slot) {
-    	if (!$scheduler){ // fetch optimization
+        
+        if (!$scheduler){ // fetch optimization
 	        $scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
     	}
-    	//scheduler_update_grades($scheduler); // generous, but works
+        
+        // do notifications before we delete the slot
+        if (!$suppress_notify && $scheduler->allownotifications)
+    	{
+    		// find students needing notification if any
+    		$students = $DB->get_records('scheduler_appointment', array('slotid' => $slot->id), '', 'id,studentid');
+    		if (!empty($students))
+    		{
+    			include_once($CFG->dirroot.'/mod/scheduler/mailtemplatelib.php');
+    			foreach ($students as $student)
+    			{
+    				$course = $DB->get_record('course', array('id' => $scheduler->course));
+    				$student = $DB->get_record('user', array('id'=>$student->studentid));
+                    $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
+                    $vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
+                    scheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'scheduler');
+    			}
+    		}
+    	}
+    	
+    	// delete the slot
+        $DB->delete_records('scheduler_slots', array('id' => $slotid));
+    	$DB->delete_records('scheduler_appointment', array('slotid' => $slotid));
     }
-    
 }
 
 
@@ -373,18 +398,6 @@ function scheduler_delete_appointment($appointmentid, $slot=null, $scheduler=nul
         }
         if (!$scheduler){ // fetch optimization
             $scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
-        }
-        // scheduler_update_grades($scheduler, $oldrecord->studentid);        
-        // not reusable slot. Delete it if slot is too near and has no more appointments.
-        if ($slot->reuse == 0) {
-            $consumed = scheduler_get_consumed($slot->schedulerid, $slot->starttime, $slot->starttime + $slot->duration * 60);
-            if (!$consumed){
-                if (time() > 0 ) { //  ULPGC ecastro, volatiles are deleted always   $slot->starttime - $scheduler->reuseguardtime * 3600){
-                    if (!$DB->delete_records('scheduler_slots', array('id' => $slot->id))) {
-                        print_error('Couldn\'t delete old choice from database');
-                    }
-                }
-            }
         }
     }
 }
