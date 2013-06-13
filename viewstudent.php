@@ -7,6 +7,8 @@
  * @subpackage scheduler
  * @copyright  2011 Henning Bostelmann and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * @todo eliminate save comment javascript method in place of a save button at the bottom.
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -122,7 +124,7 @@ if ($slots = $DB->get_records_sql($sql, array($scheduler->id, $studentid, $order
             $commenteditor .= "<input type=\"hidden\" name=\"id\" value=\"{$cm->id}\" />\n";
             $commenteditor .= "<input type=\"hidden\" name=\"studentid\" value=\"{$studentid}\" />\n";
             $commenteditor .= "<input type=\"hidden\" name=\"appid\" value=\"{$slot->appid}\" />\n";
-            $commenteditor .= print_textarea($usehtmleditor, 20, 60, 400, 200, 'appointmentnote', $slot->appointmentnote, $COURSE->id, true);
+            $commenteditor .= print_textarea($usehtmleditor, 20, 60, 400, 200, 'appointmentnote_'.$slot->id, $slot->appointmentnote, $COURSE->id, true);
             if ($usehtmleditor) {
                 $commenteditor .= "<input type=\"hidden\" name=\"format\" value=\"FORMAT_HTML\" />\n";
             } 

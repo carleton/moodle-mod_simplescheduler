@@ -17,20 +17,19 @@ if ($subaction == 'updatenote' and (has_capability('mod/scheduler:manage', $cont
     $app->id = required_param('appid', PARAM_INT);
     $distribute = optional_param('distribute', 0, PARAM_INT);
     
-    
-    if ($app->id){
+   if ($app->id){
+    	$slotid = $DB->get_field('scheduler_appointment', 'slotid', array('id' => $app->id));
         if ($distribute){
             echo "distributing";
-            $slotid = $DB->get_field('scheduler_appointment', 'slotid', array('id' => $app->id));
             $allapps = scheduler_get_appointments($slotid);
             foreach($allapps as $anapp){
-                $anapp->appointmentnote = required_param('appointmentnote', PARAM_CLEANHTML);
+                $anapp->appointmentnote = required_param('appointmentnote_'.$slotid, PARAM_CLEANHTML);
                 $anapp->timemodified = time();
                 $DB->update_record('scheduler_appointment', $anapp);
             }
         }
         else{
-            $app->appointmentnote = required_param('appointmentnote', PARAM_CLEANHTML);
+            $app->appointmentnote = required_param('appointmentnote_'.$slotid, PARAM_CLEANHTML);
             $DB->update_record('scheduler_appointment', $app);
         }
     }
