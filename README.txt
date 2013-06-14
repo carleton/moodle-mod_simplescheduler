@@ -1,4 +1,4 @@
-Appointment Scheduler for Moodle 2.x
+Simple Appointment Scheduler for Moodle 2.x
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,13 +17,7 @@ http://www.gnu.org/copyleft/gpl.html
 
 The Scheduler module helps you to schedule appointments with your students. 
 Teachers specify time slots for meetings, students then choose one of them on Moodle.
-Teacher in turn can record the outcome of the meeting - and optionally a grade - 
-within the scheduler.
-
-For further information, please see:
-    http://docs.moodle.org/23/en/Scheduler_module
-
-(Note that the information there may refer to a previous version of the module.)
+Teacher can record comments on the meeting within the module.
 
 
 === Installation instructions ===
@@ -40,7 +34,10 @@ This module is intended for Moodle 2.3 and above.
 
 === Authors ===
 
-Current maintainer:
+This fork of scheduler is maintained by 
+ Nathan White, Carleton College <nwhite@carleton.edu>
+ 
+The current maintainer of Scheduler is:
  Henning Bostelmann, University of York <henning.bostelmann@york.ac.uk>
 
 Based on previous work by:
@@ -60,23 +57,4 @@ With further contributions taken from:
 
 --- Version 2.3 ---
 
-Intended for Moodle 2.3 and later; no major functional changes, but API adapted and minor enhancements.
-
---- Version 2.0 --- 
-
-No major functional changes over 1.9; bug fixes and API migration only. Requires 1.9 for database upgrades.  
-
-
-=== Technical notes ===
-
-The code of this module is rather old, much of it predates even Moodle 1.9.
-It has partially been adapted to the new APIs. The following aspects have been migrated,
-that is, malfunction in this respect should be considered a bug:
-
-* Gradebook integration
-* Moodle 2 backup
-* New rich text editor and file API (activity intro only) 
-* Localization / language packs
-
-The module does not use any deprecated API as of Moodle 2.3.
-
+Intended for Moodle 2.3 and later; reduced to core scheduling functionality and cleanup up code.

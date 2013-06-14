@@ -131,12 +131,9 @@ if ($action == 'savechoice') {
     {
     	$sql .= " AND a.slotid NOT IN (" . implode(",", $slot_id_array_validated) . ")";
     }
-    if ($scheduler->schedulermode == 'onetime'){
-        $sql .= " AND s.starttime > ".time();
-    }
+    $sql .= " AND s.starttime > ".time(); // only mark future ones for deletion
     if ($oldappointments = $DB->get_records_sql($sql))
     {
-  	
         foreach($oldappointments as $oldappointment){
             
             $oldappid  = $oldappointment->appointmentid;

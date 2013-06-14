@@ -9,6 +9,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  * @todo review to make sure capabilities are checked as appropriate
+ * @todo remove appointment making from creating / updating slots entirely
+ * @todo revamp revokeone to utilize existing/new methods from locallib.php
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -189,7 +191,6 @@ switch ($action) {
                 $appointment->slotid = $slot->id; // now we know !!
                 $appointment->attended = 0;
                 $DB->insert_record('scheduler_appointment', $appointment);
-		        //scheduler_update_grades($scheduler, $appointment->studentid);
             }
         }
         
@@ -238,7 +239,7 @@ switch ($action) {
         $slot = new stdClass();
         $slot->appointmentlocation = $data->appointmentlocation;
         $slot->exclusivity = $data->exclusivity;
-       $slot->duration = $data->duration;
+        $slot->duration = $data->duration;
         $slot->schedulerid = $scheduler->id;
         $slot->timemodified = time();
         $slot->teacherid = $data->teacherid;
@@ -459,7 +460,7 @@ switch ($action) {
             $sql = "
                 SELECT
                 s.id,
-                s.id
+                s.schedulerid
                 FROM
                 {scheduler_slots} s
                 LEFT JOIN
@@ -471,23 +472,19 @@ switch ($action) {
                 {$teacherClause}
                 ";
             if ($unappointed = $DB->get_records_sql($sql, array($scheduler->id))) {
-                list($usql, $params) = $DB->get_in_or_equal(array_keys($unappointed));
-                $DB->delete_records_select('scheduler_slots', "schedulerid = $cm->instance AND id $usql ", $params);
+            	foreach ($unappointed as $aSlot) {
+            		scheduler_delete_slot($aSlot->id, $scheduler);
+            	}
             }
         }
         break;
     }
     /************************************ Deleting current teacher's slots ***************************************/
     case 'deleteonlymine': {
-        if ($slots = $DB->get_records_select('scheduler_slots', "schedulerid = {$cm->instance} AND teacherid = {$USER->id}", null, '', 'id,id')) {
-            foreach($slots as $aSlot){
-                scheduler_delete_calendar_events($aSlot);
+        if ($slots = $DB->get_records_select('scheduler_slots', "schedulerid = {$cm->instance} AND teacherid = {$USER->id}", null, '', 'id')) {
+            foreach($slots as $aSlot) {
+            	scheduler_delete_slot($aSlot->id, $scheduler);
             }
-            $DB->delete_records('scheduler_slots', array('schedulerid'=>$cm->instance, 'teacherid'=>$USER->id));
-            $slotList = implode(',', array_keys($slots));
-            $DB->delete_records_select('scheduler_appointment', "slotid IN ($slotList)");
-            unset($slots);
-            scheduler_update_grades($scheduler);
         }
         break;
     }

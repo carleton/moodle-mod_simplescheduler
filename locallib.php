@@ -7,6 +7,8 @@
  * @subpackage scheduler
  * @copyright  2011 Henning Bostelmann and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * @todo should we remove and stop calling scheduler_free_late_unused_slots?
  */
 
 defined('MOODLE_INTERNAL') || die();

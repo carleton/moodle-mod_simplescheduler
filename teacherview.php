@@ -8,7 +8,6 @@
  * @copyright  2011 Henning Bostelmann and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @todo remove centering tags
  * @todo add interface for assigning students to slots
  * @todo add "show past slots" toggle
  */
@@ -136,7 +135,7 @@ if ($action == 'addslot'){
     }
     
     /// print form
-    echo $OUTPUT->box_start('center', '', '');
+    echo $OUTPUT->box_start('boxaligncenter');
     include('oneslotform.html');
     echo $OUTPUT->box_end();
     echo '<br />';
@@ -192,7 +191,7 @@ if ($action == 'updateslot') {
     /// print form
     $form->what = 'doaddupdateslot';
     
-    echo $OUTPUT->box_start('center', '', '');
+    echo $OUTPUT->box_start('boxaligncenter');
     include('oneslotform.html');
     echo $OUTPUT->box_end();
     echo '<br />';
@@ -236,7 +235,7 @@ if ($action == 'addsession') {
     }
     
     echo $OUTPUT->heading(get_string('addsession', 'scheduler'));
-    echo $OUTPUT->box_start('center', '', '');
+    echo $OUTPUT->box_start('boxaligncenter');
     include_once('addslotsform.html');
     echo $OUTPUT->box_end();
     echo '<br />';
@@ -338,7 +337,7 @@ if ($action == 'schedule') {
     $form->student = $DB->get_record('user', array('id'=>$form->studentid));
     $studentname = fullname($form->student, true);
     echo $OUTPUT->heading(get_string('scheduleappointment', 'scheduler', $studentname));
-    echo $OUTPUT->box_start('center', '', '');
+    echo $OUTPUT->box_start('boxaligncenter');
     include($CFG->dirroot.'/mod/scheduler/oneslotform.html');
     echo $OUTPUT->box_end();
     
@@ -455,7 +454,7 @@ if ($action == 'schedulegroup') {
     // diplay form
     $form->group = $DB->get_record('groups', array('id'=>$form->groupid));
     echo $OUTPUT->heading(get_string('scheduleappointment', 'scheduler', $form->group->name));
-    echo $OUTPUT->box_start('center', '', '');
+    echo $OUTPUT->box_start('boxaligncenter');
     include($CFG->dirroot.'/mod/scheduler/oneslotform.html');
     echo $OUTPUT->box_end();
     
@@ -552,12 +551,11 @@ $strdownloadexcel = get_string('downloadexcel', 'scheduler');
 /// some slots already exist
 if ($slots){
     // print instructions and button for creating slots
-    echo $OUTPUT->box_start('center', '', '');
+    echo $OUTPUT->box_start('boxaligncenter');
     
     // these instructions are too redundant and in prime real estate - the buttons themselves are quite explanatory
     //print_string('addslot', 'scheduler');
     
-    echo '<center>';
     // print add session button
     $strdeleteallslots = get_string('deleteallslots', 'scheduler');
     $strdeleteallunusedslots = get_string('deleteallunusedslots', 'scheduler');
@@ -566,7 +564,6 @@ if ($slots){
     $strstudents = get_string('students', 'scheduler');
     $displaydeletebuttons = 1;
     include $CFG->dirroot.'/mod/scheduler/commands.html';
-    echo '</center>';
     echo $OUTPUT->box_end();
     
     // prepare slots table
@@ -579,6 +576,7 @@ if ($slots){
         $table->align = array ('LEFT', 'LEFT', 'LEFT', 'LEFT', 'LEFT', 'LEFT');
     }
     $table->width = '90%';
+    $table->attributes = array('class' => 'generaltable boxaligncenter');
     $offsetdatemem = '';
     foreach($slots as $slot) {
         
@@ -677,44 +675,44 @@ if ($slots){
     echo $OUTPUT->heading(get_string('slots' ,'scheduler'));
     echo html_writer::table($table);
     ?>
-<center>
 
 
 <?php
-if ($sqlcount > 25){
-    echo "Page : ";
+if ($sqlcount > 25) {
+	$table = new html_table();
+    $str = "Page : ";
     $pagescount = ceil($sqlcount/25);
     for ($n = 0; $n < $pagescount; $n ++){
         if ($n == $offset){
-            echo ($n+1).' ';
+            $str .= ($n+1).' ';
         } else {
-            echo "<a href=view.php?id={$cm->id}&amp;page={$page}&amp;offset={$n}>".($n+1)."</a> ";
+            $str .= "<a href=view.php?id={$cm->id}&amp;page={$page}&amp;offset={$n}>".($n+1)."</a> ";
         }
     }
+    $table->data[] = array($str);
+    $table->attributes = array('class' => 'generaltable boxaligncenter');
+    $table->width = '90%';
+    echo html_writer::table($table);
 }
 
-echo '</center>';
 
 // Instruction for teacher to click Seen box after appointment
 //echo '<br /><center>' . get_string('markseen', 'scheduler') . '</center>';
 
 } else if ($action != 'addsession') {
     /// There are no slots, should the teacher be asked to make some
-    echo $OUTPUT->box_start('center', '', '');
+    echo $OUTPUT->box_start('boxaligncenter', '', '');
     
     // these instructions are too redundant - the buttons themselves are quite explanatory
     //print_string('welcomenewteacher', 'scheduler');
-    echo '<center>';
     $displaydeletebuttons = 0;
     include $CFG->dirroot.'/mod/scheduler/commands.html';
-    echo '</center>';
     echo $OUTPUT->box_end();
 }
 
 /// print table of outstanding appointer (students)
 ?>
-<center>
-<table width="90%">
+<table width="90%" class="boxaligncenter">
     <tr valign="top">
         <td width="50%">
 <?php
@@ -816,7 +814,7 @@ if (!$students) {
         $body = $strinvitation . ': ' . $scheduler->name . "\n\n";
         $body .= get_string('invitationtext', 'scheduler');
         $body .= "{$CFG->wwwroot}/mod/scheduler/view.php?id={$cm->id}";
-        $maildisplay = '<center>';
+        $maildisplay = '';
         if ($CFG->scheduler_showemailplain) {
         	$maildisplay .= '<p>'.implode(', ', $maillist).'</p>';
         }
@@ -832,7 +830,7 @@ if (!$students) {
         $body .= "{$CFG->wwwroot}/mod/scheduler/view.php?id={$cm->id}";
         $maildisplay .= $mailto.'?subject='.htmlentities(rawurlencode($subject)). 
             '&amp;body='.htmlentities(rawurlencode($body)).
-            '"> '.$strreminder.'</a></center>';
+            '"> '.$strreminder.'</a>';
         echo $OUTPUT->box($maildisplay); 
         
         // print table of students who still have to make appointments
@@ -889,11 +887,8 @@ if (empty($groups)){
 ?>
     </tr>
 </table>
-</center>
 
-<center>
 <form action="<?php echo "{$CFG->wwwroot}/course/view.php" ?>" method="get">
     <input type="hidden" name="id" value="<?php p($course->id) ?>" />
     <input type="submit" name="go_btn" value="<?php print_string('return', 'scheduler') ?>" />
 </form>
-<center>

@@ -46,10 +46,11 @@ $sql = '
     WHERE
     s.id = a.slotid AND
     a.studentid = ? AND
-    a.attended = 1 AND
     s.schedulerid = ?
     ';
 $hasattended = $DB->count_records_sql($sql, array($USER->id, $scheduler->id));
+
+var_dump($hasattended);
 
 /// get available slots
 
