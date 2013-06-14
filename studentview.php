@@ -26,7 +26,10 @@ if (trim(strip_tags($scheduler->intro))) {
 
 $OUTPUT->box_start('center', '80%');
 if (scheduler_has_slot($USER->id, $scheduler, true)) {
-    print_string('welcomebackstudent', 'scheduler');
+    if ($scheduler->schedulermode == 'oneonly') {	
+    	print_string('welcomebackstudent', 'scheduler');
+    }
+    else print_string('welcomebackstudentmulti', 'scheduler');
 } else {
     print_string('welcomenewstudent', 'scheduler');
 }
@@ -53,9 +56,13 @@ $hasattended = $DB->count_records_sql($sql, array($USER->id, $scheduler->id));
 /// get available slots
 
 $haveunattendedappointments = false;
+
+// this grabs all slots that are available or already appointed for the user.
 if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
-    $minhidedate = 0; // very far in the past
+	$minhidedate = 0; // very far in the past
     $studentSlots = array();
+    $studentPastAppointedSlots = array();
+    
     foreach($slots as $slot) {
         /// check if other appointement is not "on the way". Student could not apply to it.
         if (scheduler_get_conflicts($scheduler->id, $slot->starttime, $slot->starttime + $slot->duration * 60, 0, $USER->id, SCHEDULER_OTHERS)){
@@ -63,10 +70,13 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
         }
         
         /// check if not mine and late, don't care
-        if (!$slot->appointedbyme and $slot->starttime + (60 * $slot->duration) < time()){
+        if (!$slot->appointedbyme and $slot->starttime < time()) {
             continue;
         }
-        
+        elseif ($slot->appointedbyme and $slot->starttime < time()) {
+    		$studentPastAppointedSlots[$slot->starttime.'_'.$slot->teacherid] = $slot;
+    		continue;    	
+        }
         /// check what to print in groupsession indication
         if ($slot->exclusivity == 0){
             $slot->groupsession = get_string('yes');
@@ -85,8 +95,7 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
         // I am in slot, unconditionnally
         if ($slot->appointedbyme) {
             $studentSlots[$slot->starttime.'_'.$slot->teacherid] = $slot;
-            // binary or and and required here to calculate properly
-            $haveunattendedappointments = $haveunattendedappointments | ($slot->appointedbyme & !$slot->attended);
+            $haveunattendedappointments = true;
         } else {
             // slot is free
             if (!$slot->appointed) {
@@ -109,14 +118,14 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
         }
     }
 
-    /// prepare attended slot table
+    /// prepare appointed slot table
     
-    if (count($studentAttendedSlots)){
+    if (count($studentPastAppointedSlots)){
         echo $OUTPUT->heading(get_string('attendedslots' ,'scheduler'));
         
         $table = new html_table();
         
-        $table->head  = array ($strdate, s(scheduler_get_teacher_name($scheduler)), $strnote, $strgrade);
+        $table->head  = array ($strdate, s(scheduler_get_teacher_name($scheduler)), $strnote);
         $table->align = array ('left', 'center', 'left', 'left');
         $table->size = array ('', '', '40%', '150');
         $table->width = '90%'; 
@@ -125,7 +134,7 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
         $previoustime = 0;
         $previousendtime = 0;
         
-        foreach($studentAttendedSlots as $key => $aSlot){
+        foreach($studentPastAppointedSlots as $key => $aSlot){
             /// preparing data
             $startdate = scheduler_userdate($aSlot->starttime,1);
             $starttime = scheduler_usertime($aSlot->starttime,1);
@@ -134,28 +143,6 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
             $starttimestr = ($starttime == $previoustime) ? '' : $starttime ;
             $endtimestr = ($endtime == $previousendtime) ? '' : $endtime ;
             $studentappointment = $DB->get_record('scheduler_appointment', array('slotid' => $aSlot->id, 'studentid' => $USER->id));
-            if ($scheduler->scale  > 0){
-                $studentappointment->grade = $studentappointment->grade.'/'.$scheduler->scale;
-            }
-            
-            if (has_capability('mod/scheduler:seeotherstudentsresults', $context)){
-                $appointments = scheduler_get_appointments($aSlot->id);
-                $collegues = '';
-                foreach($appointments as $appstudent){
-                    $grade = $appstudent->grade;
-                    if ($scheduler->scale > 0){
-                        $grade = $grade . '/' . $scheduler->scale;
-                    }
-                    $student = $DB->get_record('user', array('id' => $appstudent->studentid));
-                    $picture = print_user_picture($appstudent->studentid, $course->id, $student->picture, 0, true, true);
-                    $name = fullname($student);
-                    if ($appstudent->studentid == $USER->id) $name = "<b>$name</b>" ; // it's me !!
-                    $collegues .= " $picture $name ($grade)<br/>";
-                }
-            } else {
-                $collegues = $studentappointment->grade;
-            }
-            
             $studentnotes1 = '';
             $studentnotes2 = '';
             if ($aSlot->notes != ''){
@@ -172,7 +159,7 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
             
             // recording data into table
             $teacher = $DB->get_record('user', array('id'=>$aSlot->teacherid));
-            $table->data[] = array ("<span class=\"attended\">$startdatestr</span><br/><div class=\"timelabel\">[$starttimestr - $endtimestr]</div>", "<a href=\"../../user/view.php?id={$aSlot->teacherid}&amp;course={$scheduler->course}\">".fullname($teacher).'</a>',$studentnotes, $collegues);
+            $table->data[] = array ("<span class=\"attended\">$startdatestr</span><br/><div class=\"timelabel\">[$starttimestr - $endtimestr]</div>", "<a href=\"../../user/view.php?id={$aSlot->teacherid}&amp;course={$scheduler->course}\">".fullname($teacher).'</a>',$studentnotes);
             
             $previoustime = $starttime;
             $previousendtime = $endtime;

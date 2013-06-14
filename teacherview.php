@@ -548,6 +548,9 @@ $straddsession = get_string('addsession', 'scheduler');
 $straddsingleslot = get_string('addsingleslot', 'scheduler');
 $strdownloadexcel = get_string('downloadexcel', 'scheduler');
 
+// get possible attendees
+$students = scheduler_get_possible_attendees($cm, $usergroups); 
+
 /// some slots already exist
 if ($slots){
     // print instructions and button for creating slots
@@ -565,7 +568,7 @@ if ($slots){
     $displaydeletebuttons = 1;
     include $CFG->dirroot.'/mod/scheduler/commands.html';
     echo $OUTPUT->box_end();
-    
+
     // prepare slots table
     $table = new html_table();
     if ($page == 'myappointments'){
@@ -578,6 +581,7 @@ if ($slots){
     $table->width = '90%';
     $table->attributes = array('class' => 'generaltable boxaligncenter');
     $offsetdatemem = '';
+    $appointedstudentids = '';
     foreach($slots as $slot) {
         
         //if (!$slot->isappointed && $slot->starttime + (60 * $slot->duration) < time()) {
@@ -594,12 +598,15 @@ if ($slots){
         
         // slot is appointed
         $studentArray = array();
+        $slotappointedstudentids = array();
         if ($slot->isappointed) {
         	$strrevoke = get_string('revoke', 'scheduler');
         	$studentcolumn = '';
             $appointedstudents = $DB->get_records('scheduler_appointment', array('slotid'=>$slot->id));
             foreach($appointedstudents as $appstudent){
                 $student = $DB->get_record('user', array('id'=>$appstudent->studentid));
+                $slotappointedstudentids[$appstudent->studentid] = $appstudent->studentid;
+                $appointedstudentids[$appstudent->studentid] = $appstudent->studentid;
                 if ($student) {
                     $picture = $OUTPUT->user_picture($student);
                     $name = "<a href=\"view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$student->id}&amp;course={$scheduler->course}&amp;order=DESC\">".fullname($student).'</a>';
@@ -612,6 +619,7 @@ if ($slots){
         } else {
             // slot is free
             $studentcolumn = "None";
+            $slotappointedstudentids = array();
         }
         
         // lets make a form here that lets us add an eligible student
@@ -658,10 +666,53 @@ if ($slots){
                 }
             }
         }
+        
+        
         if ($slot->exclusivity > 1){
             $actions .= ' ('.$slot->exclusivity.')';
         }
         $actions .= '</span>';
+        
+        $form = '';
+        // lets add add student form for this slot to actions (if available)
+        $form .= '<form name="addtoslotform" method="post" action="view.php?id=2">';
+        $form .= '<input type="hidden" value="addstudent" name="what"></input>';
+        $form .= '<input type="hidden" value="2" name="id"></input>';
+        $form .= '<input type="hidden" value="allappointments" name="page"></input>';
+        $form .= '<select name="studentid">';
+        $form .= '<option value="">Add a student ...</option>';
+        foreach ($students as $studentid => $student)
+        {
+        	if (!isset($slotappointedstudentids[$studentid]))
+        	{
+        		if ($scheduler->schedulermode == 'oneonly')
+        		{
+        			// does student have some appointment already in this scheduler?
+        			// we have this SQL from teacherview - we should make it a function
+        			// that remembers when it has been run and run it once for each student
+        			
+        			// $sql = '
+//     SELECT
+//     COUNT(*)
+//     FROM
+//     {scheduler_slots} s,
+//     {scheduler_appointment} a
+//     WHERE
+//     s.id = a.slotid AND
+//     a.studentid = ? AND
+//     s.schedulerid = ?
+//     ';
+// 	$hasattended = $DB->count_records_sql($sql, array($USER->id, $scheduler->id));
+
+        		}
+        		$form .= '<option value="'.$studentid.'">'.fullname($student).'</option>';
+        	}
+        }
+        $form .= '<input type="submit" value="Add to slot" name="go_btn"></input>';
+        $form .= '</form>';
+        
+        $actions .= $form;
+        
         if($page == 'myappointments'){
             $table->data[] = array (($offsetdate == $offsetdatemem) ? '' : $offsetdate, $offsettime, $endtime, implode("\n",$studentArray), $actions);
         } else {
@@ -718,7 +769,6 @@ if ($sqlcount > 25) {
 <?php
 echo $OUTPUT->heading(get_string('schedulestudents', 'scheduler'));
 
-$students = scheduler_get_possible_attendees($cm, $usergroups); 
 if (!$students) {
     $nostudentstr = get_string('noexistingstudents','scheduler');
     if ($COURSE->id == SITEID){
