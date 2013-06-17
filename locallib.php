@@ -9,12 +9,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  * @todo should we remove and stop calling scheduler_free_late_unused_slots?
+ * @todo notifications are send indiscriminately right now should we skip them for appointments that have passed?
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/customlib.php');
-
 
 /**
  * Parameter $local added by power-web.at
@@ -77,7 +77,6 @@ function scheduler_get_possible_attendees($cm, $groups=''){
 		
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     $attendees = get_users_by_capability($context, 'mod/scheduler:appoint', '', 'lastname, firstname', '', '', $groups, '', false, false, false);
-    
     return $attendees;
 }
 
@@ -119,66 +118,6 @@ function scheduler_get_conflicts($schedulerid, $starttime, $endtime, $teacher=0,
     $conflicting = $DB->get_records_sql($sql);
     
     return $conflicting;
-}
-
-/**
- * Returns count of slots that would overlap with this
- * use it as a test function before toggling to exclusive
- * @param int $schedulerid the actual scheduler instance
- * @param int $starttime the starttime identifying the slot
- * @param int $endtime the endtime of the period
- * @param int $teacher the teacher constraint, if null stands for "all teachers"
- * @return int the number of compatible slots
- * @uses $CFG
- * @uses $DB
- */
-function scheduler_get_consumed($schedulerid, $starttime, $endtime, $teacherid=0) {
-    global $CFG, $DB;
-    
-    $teacherScope = ($teacherid != 0) ? " teacherid = '{$teacherid}' AND " : '' ;
-    $sql = "
-        SELECT
-        COUNT(*)
-        FROM
-        {scheduler_slots} s,
-        {scheduler_appointment} a
-        WHERE
-        a.slotid = s.id AND
-        schedulerid = {$schedulerid} AND
-        {$teacherScope}
-        ( (s.starttime <= {$starttime} AND
-        {$starttime} < s.starttime + s.duration * 60) OR
-        (s.starttime < {$endtime} AND
-        {$endtime} <= s.starttime + s.duration * 60) OR
-        (s.starttime >= {$starttime} AND
-        s.starttime + s.duration * 60 <= {$endtime}) )
-        ";
-    $count = $DB->count_records_sql($sql, NULL);
-    return $count;
-}
-
-/**
- * Returns the known exclusivity at that time
- * @param int $schedulerid the actual scheduler instance
- * @param int $starttime the starttime identifying the slot
- * @return int the exclusivity value
- * @uses $CFG
- * @uses $DB
- */
-function scheduler_get_exclusivity($schedulerid, $starttime) {
-    global $CFG, $DB;
-    
-    $sql = '
-        SELECT
-        exclusivity
-        FROM
-        {scheduler_slots} s
-        WHERE
-        schedulerid = ? AND
-        s.starttime <= ? AND
-        ? <= s.starttime + s.duration * 60
-        ';
-    return $DB->get_field_sql($sql, array($schedulerid, $starttime, $starttime));
 }
 
 /**
@@ -248,6 +187,35 @@ function scheduler_get_available_slots($studentid, $schedulerid, $studentside=fa
     }
     
     return $retainedslots;
+}
+
+/**
+ * Returns true if a student has an appointment in a particular scheduler.
+ *
+ * @param int $studentid
+ * @param int $schedulerid
+ * @return boolean
+ */
+function scheduler_student_has_appointment($studentid, $schedulerid)
+{
+	global $DB;
+	static $has_appointment;
+	if (!isset($has_appointment[$studentid][$schedulerid]))
+	{
+		$sql = '
+			SELECT
+			COUNT(*)
+			FROM
+			{scheduler_slots} s,
+			{scheduler_appointment} a
+			WHERE
+			s.id = a.slotid AND
+			a.studentid = ? AND
+			s.schedulerid = ?
+    	';
+    	$has_appointment[$studentid][$schedulerid] = $DB->count_records_sql($sql, array($studentid, $schedulerid));
+    }
+    return ($has_appointment[$studentid][$schedulerid]);
 }
 
 /**
@@ -688,78 +656,6 @@ function scheduler_get_student_event($slot, $studentid) {
 	return $event; 
 }
 
-
-// /**
-//  * a utility function for formatting grades for display
-//  * @param reference $scheduler
-//  * @param string $grade the grade to be displayed
-//  * @param boolean $short formats the grade in short form (result empty if grading is
-//  * not used, or no grade is available; parantheses are put around the grade if it is present)
-//  * @return string the formatted grade
-//  */
-// function scheduler_format_grade(&$scheduler, $grade, $short=false){
-//     
-//     global $DB;
-//     
-//     $result = '';
-//     if ($scheduler->scale == 0 || is_null($grade) ){
-//         // scheduler doesn't allow grading, or no grade entered
-//         if (!$short) {
-//             $result = get_string('nograde');
-//         }
-//     }
-//     else {
-//         if ($scheduler->scale > 0) {
-//             // numeric grades
-//             $result .= $grade;
-//             if (strlen($grade)>0){
-//                 $result .=  '/' . $scheduler->scale;
-//             }
-//         }
-//         else{
-//             // grade on scale
-//             if ($grade > 0) {
-//                 $scaleid = - ($scheduler->scale);
-//                 if ($scale = $DB->get_record('scale', array('id'=>$scaleid))) {
-//                     $levels = explode(',',$scale->scale);
-//                     if ($grade <= count($levels)) {
-//                     	$result .= $levels[$grade-1];
-//                     }
-//                 }
-//             }
-//         }
-//         if ($short && (strlen($result)>0)) {
-//             $result = '('.$result.')';
-//         }
-//     }
-//     return $result;
-// }
-
-// /**
-//  * a utility function for making grading lists
-//  * @param reference $scheduler
-//  * @param string $id the form field id
-//  * @param string $selected the selected value
-//  * @return the html selection element for a grading list
-//  */
-// function scheduler_make_grading_menu(&$scheduler, $id, $selected = '') {
-// 	global $DB;
-//     if ($scheduler->scale > 0){
-//         for($i = 0 ; $i <= $scheduler->scale ; $i++) {
-//             $scalegrades[$i] = $i; 
-//         }
-//     }
-//     else {
-//         $scaleid = - ($scheduler->scale);
-//         if ($scale = $DB->get_record('scale', array('id'=>$scaleid))) {
-//             $scalegrades = make_menu_from_list($scale->scale);
-//         }
-//     }
-//     $menu = html_writer::select($scalegrades, $id, $selected);
-//     return $menu;
-// }
-
-
 /**
  * Construct an array with subtitution rules for mail templates, relating to 
  * a single appointment. Any of the parameters can be null.
@@ -925,7 +821,50 @@ function scheduler_group_scheduling_enabled($course, $cm) {
     return $globalenable && $localenable;
 }
 
+/**
+ * Appoint student to a slot - handle notifications and calendar updates.
+ * @param int $slotid
+ * @param int $studentid
+ */ 
+function scheduler_teacher_appoint_student($slotid, $studentid) {
+	global $DB;
+	
+	// load necessary objects
+	$slot = $DB->get_record('scheduler_slots', array('id' => $slotid));
+	$scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
+	$course = $DB->get_record('course', array('id' => $scheduler->course));
+	
+	// create appointment
+	$appointment = new stdClass();
+    $appointment->slotid = $slotid;
+    $appointment->studentid = $studentid;
+    $appointment->attended = 0;
+    $appointment->timecreated = time();
+    $appointment->timemodified = time();
+    $DB->insert_record('scheduler_appointment', $appointment);
+    
+    // update calendar
+    scheduler_events_update($slot, $course);
+    
+    // notify student
+    if ($scheduler->allownotifications) {
+    	$student = $DB->get_record('user', array('id' => $studentid));
+    	$teacher = $DB->get_record('user', array('id' => $slot->teacherid));
+    	$vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
+    	scheduler_send_email_from_template($student, $teacher, $course, 'newappointment', 'assigned', $vars, 'scheduler');
+    }
+}
 
+/**
+ * Appoint student to a slot (from student view) - handle notifications and calendar updates.
+ *
+ * @todo implement me - user in studentview.controller.php
+ */
+function scheduler_student_appoint_student($slotid, $studentid)
+{
+
+}
+        
 /**
  * adds an error css marker in case of matching error
  * @param array $errors the current error set

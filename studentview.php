@@ -38,20 +38,8 @@ $OUTPUT->box_end();
 // clean all late slots (for every body, anyway, they are passed !!)
 scheduler_free_late_unused_slots($scheduler->id);
 
-/// get information about appointment attention    
-
-$sql = '
-    SELECT
-    COUNT(*)
-    FROM
-    {scheduler_slots} s,
-    {scheduler_appointment} a
-    WHERE
-    s.id = a.slotid AND
-    a.studentid = ? AND
-    s.schedulerid = ?
-    ';
-$hasattended = $DB->count_records_sql($sql, array($USER->id, $scheduler->id));
+/// does this student have an appointment?    
+$hasappointment = scheduler_student_has_appointment($USER->id, $scheduler->id)
 
 /// get available slots
 
@@ -81,7 +69,6 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
         if ($slot->exclusivity == 0){
             $slot->groupsession = get_string('yes');
         } else {
-            // $consumed = scheduler_get_consumed($scheduler->id, $slot->starttime, $slot->starttime + $slot->duration * 60, $slot->teacher);
             if ($slot->exclusivity > $slot->population){
                 $remaining = ($slot->exclusivity - $slot->population).'/'.$slot->exclusivity;
                 $slot->groupsession = get_string('limited', 'scheduler', $remaining);
@@ -100,7 +87,7 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
             // slot is free
             if (!$slot->appointed) {
                 //if student is only allowed one appointment and this student has already had their then skip this record
-                if (($hasattended) and ($scheduler->schedulermode == 'oneonly')){
+                if (($hasappointment) and ($scheduler->schedulermode == 'oneonly')){
                     continue;
                 }
                 elseif ($slot->hideuntil <= time()){

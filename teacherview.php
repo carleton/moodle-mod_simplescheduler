@@ -673,11 +673,12 @@ if ($slots){
         }
         $actions .= '</span>';
         
-        $form = '';
+        $form = '<div class="addStudent">';
         // lets add add student form for this slot to actions (if available)
         $form .= '<form name="addtoslotform" method="post" action="view.php?id=2">';
         $form .= '<input type="hidden" value="addstudent" name="what"></input>';
-        $form .= '<input type="hidden" value="2" name="id"></input>';
+        $form .= '<input type="hidden" value="'.$cm->id.'" name="id"></input>';
+        $form .= '<input type="hidden" value="'.$slot->id.'" name="slotid"></input>';
         $form .= '<input type="hidden" value="allappointments" name="page"></input>';
         $form .= '<select name="studentid">';
         $form .= '<option value="">Add a student ...</option>';
@@ -687,29 +688,17 @@ if ($slots){
         	{
         		if ($scheduler->schedulermode == 'oneonly')
         		{
-        			// does student have some appointment already in this scheduler?
-        			// we have this SQL from teacherview - we should make it a function
-        			// that remembers when it has been run and run it once for each student
-        			
-        			// $sql = '
-//     SELECT
-//     COUNT(*)
-//     FROM
-//     {scheduler_slots} s,
-//     {scheduler_appointment} a
-//     WHERE
-//     s.id = a.slotid AND
-//     a.studentid = ? AND
-//     s.schedulerid = ?
-//     ';
-// 	$hasattended = $DB->count_records_sql($sql, array($USER->id, $scheduler->id));
-
+        			if (scheduler_student_has_appointment($studentid, $scheduler->id))
+        			{
+        				continue; // student can only have one and already has one.
+        			}
         		}
         		$form .= '<option value="'.$studentid.'">'.fullname($student).'</option>';
         	}
         }
         $form .= '<input type="submit" value="Add to slot" name="go_btn"></input>';
         $form .= '</form>';
+        $form .= '</div>';
         
         $actions .= $form;
         

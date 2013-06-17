@@ -331,20 +331,25 @@ The label for the role who attends students. This is not necessarily a "teacher"
 
 /* ***********  E-mail templates from here on ************ */
 
+// Chosen from student view
 $string['email_applied_subject'] = '{$a->course_short}: New appointment';
-$string['email_applied_plain'] = 'An appointment has been applied for on {$a->date} at {$a->time}, 
-by the student {$a->attendee} for the course:
+$string['email_applied_plain'] = 'An appointment has been applied for on {$a->date} at {$a->time} by the student ';
+$string['email_applied_plain'] = '{$a->attendee} for the course {$a->course_short}: {$a->course} using the scheduler ';
+$string['email_applied_plain'] = 'titled {$a->module} on the website {$a->site}.';
+$string['email_applied_html'] = '<p>An appointment has been applied for on <strong>{$a->date} at {$a->time}</strong> by the student ' ;
+$string['email_applied_html'] = '<a href="{$a->attendee_url}">{$a->attendee}</a> for the course {$a->course_short}: <a href="{$a->course_url}">{$a->course}</a> using the scheduler ';
+$string['email_applied_html'] = 'titled "<em>{$a->module}</em>" on the website <a href="{$a->site_url}">{$a->site}</a>.</p>';
 
-{$a->course_short}: {$a->course}
-
-using the scheduler titled "{$a->module}" on the website: {$a->site}.';
-
-$string['email_applied_html'] = '<p>An appointment has been applied for on {$a->date} at {$a->time},<br/>
-by the student <a href="{$a->attendee_url}">{$a->attendee}</a> for the course:
-
-<p>{$a->course_short}: <a href="{$a->course_url}">{$a->course}</a></p>
-
-<p>using the scheduler titled "<i>{$a->module}</i>" on the website: <a href="{$a->site_url}">{$a->site}</a>.</p>';
+// Assigned from teacher view
+$string['email_assigned_subject'] = '{$a->course_short}: New appointment';
+$string['email_assigned_plain'] = 'An appointment for {$a->date} at {$a->time} has been assigned by the {$a->staffrole} ';
+$string['email_assigned_plain'] .= '{$a->attendee} for the course {$a->course_short} ';
+$string['email_assigned_plain'] .= 'using the scheduler titled ';
+$string['email_assigned_plain'] .= '{$a->module} on the website {$a->site}.';
+$string['email_assigned_html'] = '<p>An appointment for <strong>{$a->date} at {$a->time}</strong> has been assigned by the {$a->staffrole} ';
+$string['email_assigned_html'] .= '<a href="{$a->attendee_url}">{$a->attendant}</a> for the course {$a->course_short} ';
+$string['email_assigned_html'] .= '<a href="{$a->course_url}">{$a->course}</a> using the scheduler titled ';
+$string['email_assigned_html'] .= '"<em>{$a->module}</em>" on the website <a href="{$a->site_url}">{$a->site}</a>.</p>';
 
 $string['email_cancelled_subject'] = '{$a->course_short}: Appointment cancelled or moved by a student';
 

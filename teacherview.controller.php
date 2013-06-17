@@ -393,7 +393,6 @@ switch ($action) {
         if ($slot = $DB->get_record('scheduler_slots', array('id' => $slotid))){
             // unassign student to the slot
             $oldstudent = $DB->get_records('scheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid), '', 'id,studentid');
-            var_dump($oldstudent);
             
             if ($oldstudent) {
             	$student_obj = reset($oldstudent);            
@@ -487,6 +486,22 @@ switch ($action) {
             }
         }
         break;
+    }
+    /************************************ Sign up a student for a slot ******************************************/
+    case 'addstudent': {
+    	// get expected parameters
+        $slotid = optional_param('slotid', '', PARAM_INT);
+        $studentid = optional_param('studentid', '', PARAM_INT);
+        
+        if (!empty($studentid) && !empty($slotid))
+        {
+        	scheduler_teacher_appoint_student($slotid, $studentid);
+        }
+        else
+        {
+        	notify('Bones');
+        }
+        
     }
 }
 
