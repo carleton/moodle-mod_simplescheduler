@@ -9,8 +9,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  * @todo review to make sure capabilities are checked as appropriate
- * @todo remove appointment making from creating / updating slots entirely
  * @todo revamp revokeone to utilize existing/new methods from locallib.php
+ * @todo notify needs to use strings from lang file
  */
 
 defined('MOODLE_INTERNAL') || die();
