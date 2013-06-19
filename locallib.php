@@ -819,7 +819,7 @@ function scheduler_group_scheduling_enabled($course, $cm) {
  * Appoint student to a slot - handle notifications and calendar updates.
  * @param int $slotid
  * @param int $studentid
- * @return boolean success or failure
+ * @return string language string describing result
  */ 
 function scheduler_teacher_appoint_student($slotid, $studentid) {
 	global $DB;
@@ -831,9 +831,14 @@ function scheduler_teacher_appoint_student($slotid, $studentid) {
 	
 	if ($slot && $scheduler && $course)
 	{
-		$appointment_exists = $DB->get_records('scheduler_appointment', array('slotid'=>$slotid,'studentid'=>$studentid));
-		
-		if (!$DB->get_records('scheduler_appointment', array('slotid'=>$slotid,'studentid'=>$studentid))) {
+		// make sure we do not already have an appointment
+		if ( ($scheduler->schedulermode == 'oneonly') && scheduler_student_has_appointment($studentid, $scheduler->id) ) {
+			return 'teacher_appoint_student_has_appointment';
+		}
+		elseif ($DB->get_records('scheduler_appointment', array('slotid'=>$slotid,'studentid'=>$studentid))) {
+			return 'teacher_appoint_student_already_appointed';
+		}
+		else {
 			// create appointment
 			$appointment = new stdClass();
 			$appointment->slotid = $slotid;
@@ -853,7 +858,7 @@ function scheduler_teacher_appoint_student($slotid, $studentid) {
 				$vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
 				scheduler_send_email_from_template($student, $teacher, $course, 'newappointment', 'assigned', $vars, 'scheduler');
 			}
-			return true;
+			return 'teacher_appoint_student_success';
 		}
     }
     return false;
@@ -863,7 +868,7 @@ function scheduler_teacher_appoint_student($slotid, $studentid) {
  * Revoke appointment to a slot (teacher view) - handle notifications and calendar updates.
  * @param int $slotid
  * @param int $studentid
- * @return boolean success or failure
+ * @return string language string describing result
  */ 
 function scheduler_teacher_revoke_appointment($slotid, $studentid)
 {
@@ -888,10 +893,9 @@ function scheduler_teacher_revoke_appointment($slotid, $studentid)
             $vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
             scheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'scheduler');
         }
-        
-        return true;
+        return 'teacher_revoke_appointment_success';
     }
-    return false;
+    return 'teacher_revoke_appointment_already_revoked';
 }
 
 /**

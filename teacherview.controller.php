@@ -11,6 +11,7 @@
  * @todo review to make sure capabilities are checked as appropriate
  * @todo revamp revokeone to utilize existing/new methods from locallib.php
  * @todo notify needs to use strings from lang file
+ * @todo fix conflict handling in "add slots" view
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -261,15 +262,17 @@ switch ($action) {
                 $noslotsallowed = false;
                 $data->starttime = make_timestamp($eventdate['year'], $eventdate['mon'], $eventdate['mday'], $data->starthour, $data->startminute);
                 $conflicts = scheduler_get_conflicts($scheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
-                if (!$data->forcewhenoverlap){
-                    if ($conflicts){
-                        unset($erroritem);
-                        $erroritem->message = get_string('overlappings', 'scheduler');
-                        $erroritem->on = 'range';
-                        $errors[] = $erroritem;
-                    }
+                if (!$data->forcewhenoverlap && $conflicts) {
+                    $hasconflict = true;
                 }
             }
+        }
+        
+        if (isset($hasconflict))
+        {
+        	$erroritem->message = get_string('error_overlappings', 'scheduler');
+            $erroritem->on = 'range';
+            $errors[] = $erroritem;
         }
         
         /// Finally check if some slots are allowed (an error is thrown to ask care to this situation)
@@ -387,12 +390,8 @@ switch ($action) {
         $slotid = required_param('slotid', PARAM_INT);
         $studentid = required_param('studentid', PARAM_INT);
         if (!empty($slotid) && !empty($studentid)) {
-        	if (scheduler_teacher_revoke_appointment($slotid, $studentid)) {
-        		notify('Appointment successfully revoked.');
-        	}
-        	else {
-        		notify('Error - the appointment could not be revoked. Most likely it was already revoked.');
-        	}
+        	$result = scheduler_teacher_revoke_appointment($slotid, $studentid);
+        	notify(get_string($result, 'scheduler'));
         }
         break;
     }
@@ -476,17 +475,10 @@ switch ($action) {
         
         if (!empty($studentid) && !empty($slotid))
         {
-        	if (scheduler_teacher_appoint_student($slotid, $studentid))
-        	{
-        		notify('Successfully added student to slot.');
-        	}
-        	else
-        	{
-        		notify('There was an error adding the student to the slot - the student may already have been added.');
-        	}
+        	$result = scheduler_teacher_appoint_student($slotid, $studentid);
+        	notify(get_string($result, 'scheduler'));
         	break;
         }
-        notify('Error - The request contained invalid parameters.');
     }
 }
 

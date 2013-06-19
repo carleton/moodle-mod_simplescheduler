@@ -102,11 +102,7 @@ if ($action == 'addslot'){
         get_slot_data($form);
         $form->what = 'doaddupdateslot';
         $form->appointments = $appointments;
-    } elseif($subaction == 'cancel') {
-        get_slot_data($form);
-        $form->what = 'doaddupdateslot';
-        $form->appointments = unserialize(stripslashes(required_param('appointmentssaved', PARAM_RAW)));
-    } elseif (empty($subaction)){
+    } else {
         $form->what = 'doaddupdateslot';
         // blank appointment data
         if (empty($form->appointments)) $form->appointments = array();
@@ -144,31 +140,23 @@ if ($action == 'updateslot') {
     echo $OUTPUT->heading(get_string('updatesingleslot', 'scheduler'));
     $form = new stdClass();
     
-    if(empty($subaction)){
-        if(!empty($errors)){ // if some errors, get data from client side
-            get_slot_data($form);
-            $form->appointments = unserialize(stripslashes(required_param('appointments', PARAM_RAW)));
-        } else {
-            /// get data from the last inserted
-            $slot = $DB->get_record('scheduler_slots', array('id'=>$slotid));
-            $form = &$slot;
-            // get all appointments for this slot
-            $form->appointments = array();
-            $appointments = $DB->get_records('scheduler_appointment', array('slotid'=>$slotid));
-            // convert appointement keys to studentid
-            if ($appointments){
-                foreach($appointments as $appointment){
-                    $form->appointments[$appointment->studentid] = $appointment;
-                }
-            }
-        }
-    } elseif($subaction == 'cancel') {
-        get_slot_data($form);
-        $form->appointments = unserialize(stripslashes(required_param('appointmentssaved', PARAM_RAW)));
-        $form->studentid = required_param('studentid', PARAM_INT);
-        $form->slotid = required_param('slotid', PARAM_INT);
-        $form->what = 'doaddupdateslot';
-    }
+    if(!empty($errors)){ // if some errors, get data from client side
+    	get_slot_data($form);
+    	$form->appointments = unserialize(stripslashes(required_param('appointments', PARAM_RAW)));
+    } else {
+    	/// get data from the last inserted
+    	$slot = $DB->get_record('scheduler_slots', array('id'=>$slotid));
+    	$form = &$slot;
+		// get all appointments for this slot
+		$form->appointments = array();
+		$appointments = $DB->get_records('scheduler_appointment', array('slotid'=>$slotid));
+		// convert appointement keys to studentid
+		if ($appointments){
+			foreach($appointments as $appointment){
+				$form->appointments[$appointment->studentid] = $appointment;
+			}
+		}
+	}
     
     // print errors and notices
     if (!empty($errors)){
