@@ -31,7 +31,10 @@ if (scheduler_has_slot($USER->id, $scheduler, true)) {
     }
     else print_string('welcomebackstudentmulti', 'scheduler');
 } else {
-    print_string('welcomenewstudent', 'scheduler');
+	if ($scheduler->schedulermode == 'oneonly') {
+		print_string('welcomenewstudent', 'scheduler');
+	}
+	else print_string('welcomenewstudentmulti', 'scheduler');
 }
 $OUTPUT->box_end();
 
@@ -39,7 +42,7 @@ $OUTPUT->box_end();
 scheduler_free_late_unused_slots($scheduler->id);
 
 /// does this student have an appointment?    
-$hasappointment = scheduler_student_has_appointment($USER->id, $scheduler->id)
+$hasappointment = scheduler_student_has_appointment($USER->id, $scheduler->id);
 
 /// get available slots
 
@@ -50,11 +53,10 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
 	$minhidedate = 0; // very far in the past
     $studentSlots = array();
     $studentPastAppointedSlots = array();
-    
     foreach($slots as $slot) {
         /// check if other appointement is not "on the way". Student could not apply to it.
         if (scheduler_get_conflicts($scheduler->id, $slot->starttime, $slot->starttime + $slot->duration * 60, 0, $USER->id, SCHEDULER_OTHERS)){
-            continue;
+        	continue;
         }
         
         /// check if not mine and late, don't care
@@ -84,13 +86,10 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
             $studentSlots[$slot->starttime.'_'.$slot->teacherid] = $slot;
             $haveunattendedappointments = true;
         } else {
-            // slot is free
+        	// slot is free
             if (!$slot->appointed) {
                 //if student is only allowed one appointment and this student has already had their then skip this record
-                if (($hasappointment) and ($scheduler->schedulermode == 'oneonly')){
-                    continue;
-                }
-                elseif ($slot->hideuntil <= time()){
+                if ($slot->hideuntil <= time()){
                     $studentSlots[$slot->starttime.'_'.$slot->teacherid] = $slot;
                 }
                 $minhidedate = ($slot->hideuntil < $minhidedate || $minhidedate == 0) ? $slot->hideuntil : $minhidedate ;
@@ -193,7 +192,7 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
                 foreach($appointments as $appstudent){
                     $student = $DB->get_record('user', array('id'=>$appstudent->studentid));
                     $picture = $OUTPUT->user_picture($student, array('courseid'=>$course->id));
-                    $name = "<a href=\"view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$student->id}&amp;course={$scheduler->course}&amp;order=DESC\">".fullname($student).'</a>';
+                    $name = "<a href=\"view.php?id={$cm->id}&amp;what=viewstudent&amp;studentid={$student->id}&amp;course={$scheduler->course}&amp;order=DESC\">".fullname($student).'</a>';
                     $collegues .= " $picture $name<br/>";
                 }
                 $collegues .= '</div>';
@@ -219,10 +218,9 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
     
     if (count($table->data)){
         ?>
-        <center>
         <form name="appoint" action="view.php" method="get">
-        <input type="hidden" name="what" value="savechoice" />
         <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
+        <input type="hidden" name="what" value="savechoice" />
         <script type="text/javascript">
         function checkGroupAppointment(enable){
             var numgroups = '<?php p(count($mygroups)) ?>';
@@ -287,8 +285,6 @@ echo '</form>';
 if ($haveunattendedappointments and has_capability('mod/scheduler:disengage', $context)){
     echo "<br/><a href=\"view.php?id={$cm->id}&amp;what=disengage\">".get_string('disengage','scheduler').'</a>';
 }
-
-echo '</center>';
 
 }
 else {

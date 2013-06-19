@@ -246,45 +246,7 @@ if ($action == 'addsession') {
 /************************************ Schedule a student form ***********************************************/
 if ($action == 'schedule') {
     $form = new stdClass();
-    if ($subaction == 'dochooseslot'){
-        /// set an advice message
-        unset($erroritem);
-        $erroritem->message = get_string('dontforgetsaveadvice', 'scheduler');
-        $erroritem->on = '';
-        $errors[] = $erroritem;
-        
-        $slotid = required_param('slotid', PARAM_INT);
-        $studentid = required_param('studentid', PARAM_INT);
-        if ($slot = $DB->get_record('scheduler_slots', array('id'=>$slotid))){
-            $form = &$slot;
-            
-            $form->studentid = $studentid;
-            $form->what = 'doaddupdateslot';
-            $form->slotid = $slotid;
-            $form->availableslots = scheduler_get_available_slots($studentid, $scheduler->id);
-            $appointment->studentid = $studentid;
-            $appointment->attended = optional_param('attended', 0, PARAM_INT);
-            $appointment->appointmentnote = optional_param('appointmentnote', '', PARAM_TEXT);
-            $appointment->timecreated = time();
-            $appointment->timemodified = time();
-            $appointments = $DB->get_records('scheduler_appointment', array('slotid'=>$slotid));
-            $appointments[$appointment->studentid] = $appointment;
-            $form->appointments = $appointments;
-        } else {
-            $form->studentid = $studentid;
-            $form->what = 'doaddupdateslot';
-            $form->slotid = 0;
-            $form->starttime = time();
-            $form->duration = 15;
-            $form->exclusivity = 1;
-            $form->hideuntil = $scheduler->timemodified; // supposed being in the past so slot is visible
-            $form->notes = '';
-            $form->teacherid = $USER->id;
-            $form->appointmentlocation = scheduler_get_last_location($scheduler);
-            $form->availableslots = scheduler_get_available_slots($studentid, $scheduler->id);
-            $form->appointments = unserialize(stripslashes(required_param('appointments', PARAM_RAW)));
-        }
-    } elseif($subaction == 'cancel') {
+    if($subaction == 'cancel') {
         get_slot_data($form);
         $form->appointments = unserialize(stripslashes(required_param('appointments', PARAM_RAW)));
         $form->studentid = required_param('studentid', PARAM_INT);

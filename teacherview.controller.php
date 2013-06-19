@@ -321,9 +321,7 @@ switch ($action) {
                 else {
                     $slot->emaildate = make_timestamp($eventdate['year'], $eventdate['mon'], $eventdate['mday'], 0, 0) - $data->emailfrom;
                 }
-                // echo " generating from " .userdate($slot->starttime)." till ".userdate($data->timeend). " ";
-                // echo " generating on " . ($data->timeend - $slot->starttime) / 60;
-                while ($slot->starttime <= $data->timeend - $data->duration * 60) {
+            	while ($slot->starttime <= $data->timeend - $data->duration * 60) {
                     $conflicts = scheduler_get_conflicts($scheduler->id, $data->timestart, $data->timestart + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
                     if ($conflicts) {
                         if (!$data->forcewhenoverlap){
@@ -384,38 +382,21 @@ switch ($action) {
     }
     /************************************ Revoking one appointment from a slot ***************************************
      * @todo deleting and creating the calendar event is not efficient - we should add support for a student id.
-     * @todo notifications should move into lib as should the deletion logic probably.
 	 */
     case 'revokeone': {
         $slotid = required_param('slotid', PARAM_INT);
         $studentid = required_param('studentid', PARAM_INT);
-        
-        if ($slot = $DB->get_record('scheduler_slots', array('id' => $slotid))){
-            // unassign student to the slot
-            $oldstudent = $DB->get_records('scheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid), '', 'id,studentid');
-            
-            if ($oldstudent) {
-            	$student_obj = reset($oldstudent);            
-                scheduler_delete_appointment($student_obj->id, $slot, $scheduler);
-                
-            	// delete and recreate events for the slot
-            	scheduler_delete_calendar_events($slot);
-            	scheduler_add_update_calendar_events($slot, $COURSE);
-            
-            	// notify student
-            	if ($scheduler->allownotifications){
-                	include_once($CFG->dirroot.'/mod/scheduler/mailtemplatelib.php');
-                    
-               		$student = $DB->get_record('user', array('id'=>$student_obj->studentid));
-                	$teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
-                    
-                	$vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
-                	scheduler_send_email_from_template($student, $teacher, $COURSE, 'cancelledbyteacher', 'teachercancelled', $vars, 'scheduler');
-            	}
-            }
+        if (!empty($slotid) && !empty($studentid)) {
+        	if (scheduler_teacher_revoke_appointment($slotid, $studentid)) {
+        		notify('Appointment successfully revoked.');
+        	}
+        	else {
+        		notify('Error - the appointment could not be revoked. Most likely it was already revoked.');
+        	}
         }
         break;
     }
+    
     /************************************ Toggling to unlimited group ***************************************/
     case 'allowgroup':{
         $slotid = required_param('slotid', PARAM_INT);
@@ -495,13 +476,17 @@ switch ($action) {
         
         if (!empty($studentid) && !empty($slotid))
         {
-        	scheduler_teacher_appoint_student($slotid, $studentid);
+        	if (scheduler_teacher_appoint_student($slotid, $studentid))
+        	{
+        		notify('Successfully added student to slot.');
+        	}
+        	else
+        	{
+        		notify('There was an error adding the student to the slot - the student may already have been added.');
+        	}
+        	break;
         }
-        else
-        {
-        	notify('Bones');
-        }
-        
+        notify('Error - The request contained invalid parameters.');
     }
 }
 

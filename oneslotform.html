@@ -188,25 +188,3 @@ echo $OUTPUT->box_end();
 <input type="button" value="<?php  print_string('cancel') ?>" onclick="self.location.href='view.php?id=<?php echo $cm->id?>'" />
 </center>
 </form>
-<!-- This JS is a hack around Moodle standards, but it's required at the moment without refactoring the entire code. -->
-<script type="text/javascript">
-     function reloadandchoose() {
-         document.forms['add'].what.value = '<?php p($action) ?>';
-         document.forms['add'].subaction.value = 'dochooseslot';
-         document.forms['add'].studentid.value = '<?php p(@$form->studentid) ?>';
-         document.forms['add'].groupid.value = '<?php p(@$form->groupid) ?>';
-         document.forms['add'].submit();
-     }
-     document.forms['add'].elements['slotchooser'].onchange = function() { reloadandchoose(); };
-     
-     function allowmoreappointments(selectobj){
-         var addlink = document.getElementById('addappointment');
-         if (selectobj.options[selectobj.selectedIndex].value > <?php echo count($form->appointments) ?> ){
-             addlink.style.visibility = 'visible';
-         } else {
-             addlink.style.visibility = 'hidden';
-         }
-     }
-     document.forms['add'].elements['exclusivechooser'].onchange = function() { allowmoreappointments(this); };
-                        
- </script>

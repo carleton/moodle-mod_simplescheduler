@@ -71,7 +71,7 @@ function scheduler_delete_instance($id) {
     if ($oldslots) {
         foreach(array_keys($oldslots) as $slotid){
             // will delete appointments and remaining related events - we suppress notifications here.
-            scheduler_delete_slot($slotid, null, true);
+            scheduler_delete_slot($slotid, null);
         }
     }
     return $result;

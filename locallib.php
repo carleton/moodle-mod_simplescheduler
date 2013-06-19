@@ -281,20 +281,22 @@ function scheduler_get_appointed($slotid){
 }
 
 /**
- * fully deletes a slot with all dependancies
+ * Fully deletes a slot with all dependencies
  *
  * - deletes calendar events
- * - sends notifications to students signed up for the slot (if enabled)
+ * - conditionally sends notifications to students signed up for the slot
  * - deletes the schedules slot
  * - deletes all appointments
  *
- * @todo instead of using DB directly this should call scheduler_delete_appointment ... we have logic in too many places.
+ * If param notify is not explicitly set, deleting triggers notification on modifications to upcoming slots
+ * provided that notification is enabled for the scheduler as a whole.
  *
  * @param int slotid
  * @param stdClass $scheduler (optional)
+ * @param boolean notify (if true, will send, if false, will not, if null uses logic)
  * @uses $DB
  */
-function scheduler_delete_slot($slotid, $scheduler=null, $suppress_notify=false){
+function scheduler_delete_slot($slotid, $scheduler=null, $notify=NULL){
     global $CFG, $DB;
     
     if ($slot = $DB->get_record('scheduler_slots', array('id' => $slotid))) {
@@ -304,8 +306,13 @@ function scheduler_delete_slot($slotid, $scheduler=null, $suppress_notify=false)
 	        $scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
     	}
         
+        if (is_null($notify)) // if our slot is a future slot and 
+        {
+        	$notify = ($scheduler->allownotifications && (time() < $slot->starttime));
+        }
+        
         // do notifications before we delete the slot
-        if (!$suppress_notify && $scheduler->allownotifications)
+        if ($notify)
     	{
     		// find students needing notification if any
     		$students = $DB->get_records('scheduler_appointment', array('slotid' => $slot->id), '', 'id,studentid');
@@ -339,36 +346,23 @@ function scheduler_delete_slot($slotid, $scheduler=null, $suppress_notify=false)
  */
 function scheduler_get_appointments($slotid){
     global $CFG, $DB;
-    
     $apps = $DB->get_records('scheduler_appointment', array('slotid' => $slotid));
-    
     return $apps;
 }
 
 /**
- * a high level api function for deleting an appointement, and do
- * what ever is needed
+ * Deletes records from scheduler_appointment table
+ *
  * @param int $appointmentid
  * @param object $slot
- * @param object $scheduler
  * @uses $DB
  */
-function scheduler_delete_appointment($appointmentid, $slot=null, $scheduler=null){
+function scheduler_delete_appointment($appointmentid) {
     global $DB;
     
     if (!$oldrecord = $DB->get_record('scheduler_appointment', array('id' => $appointmentid))) return ;
-    
-    if (!$slot){ // fetch optimization
-        $slot = $DB->get_record('scheduler_slots', array('id' => $oldrecord->slotid));
-    }
-    if($slot){
-        // delete appointment
-        if (!$DB->delete_records('scheduler_appointment', array('id' => $appointmentid))) {
+    if (!$DB->delete_records('scheduler_appointment', array('id' => $appointmentid))) {
             print_error('Couldn\'t delete old choice from database');
-        }
-        if (!$scheduler){ // fetch optimization
-            $scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
-        }
     }
 }
 
@@ -457,7 +451,7 @@ function scheduler_add_update_calendar_events($slot, $course) {
     $eventStartTime = $slot->starttime;
     
     // get all students attached to that slot
-    $appointments = $DB->get_records('scheduler_appointment', array('slotid'=>$slot->id), '', 'studentid,studentid');
+    $appointments = $DB->get_records('scheduler_appointment', array('slotid'=>$slot->id), '', 'studentid');
     
     // nothing to do
     if (!$appointments) return;
@@ -825,6 +819,7 @@ function scheduler_group_scheduling_enabled($course, $cm) {
  * Appoint student to a slot - handle notifications and calendar updates.
  * @param int $slotid
  * @param int $studentid
+ * @return boolean success or failure
  */ 
 function scheduler_teacher_appoint_student($slotid, $studentid) {
 	global $DB;
@@ -834,25 +829,105 @@ function scheduler_teacher_appoint_student($slotid, $studentid) {
 	$scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
 	$course = $DB->get_record('course', array('id' => $scheduler->course));
 	
-	// create appointment
-	$appointment = new stdClass();
-    $appointment->slotid = $slotid;
-    $appointment->studentid = $studentid;
-    $appointment->attended = 0;
-    $appointment->timecreated = time();
-    $appointment->timemodified = time();
-    $DB->insert_record('scheduler_appointment', $appointment);
-    
-    // update calendar
-    scheduler_events_update($slot, $course);
-    
-    // notify student
-    if ($scheduler->allownotifications) {
-    	$student = $DB->get_record('user', array('id' => $studentid));
-    	$teacher = $DB->get_record('user', array('id' => $slot->teacherid));
-    	$vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
-    	scheduler_send_email_from_template($student, $teacher, $course, 'newappointment', 'assigned', $vars, 'scheduler');
+	if ($slot && $scheduler && $course)
+	{
+		$appointment_exists = $DB->get_records('scheduler_appointment', array('slotid'=>$slotid,'studentid'=>$studentid));
+		
+		if (!$DB->get_records('scheduler_appointment', array('slotid'=>$slotid,'studentid'=>$studentid))) {
+			// create appointment
+			$appointment = new stdClass();
+			$appointment->slotid = $slotid;
+			$appointment->studentid = $studentid;
+			$appointment->attended = 0;
+			$appointment->timecreated = time();
+			$appointment->timemodified = time();
+			$DB->insert_record('scheduler_appointment', $appointment);
+	
+			// update calendar
+			scheduler_events_update($slot, $course);
+	
+			// notify student if this is a future slot
+			if ($scheduler->allownotifications && (time() < $slot->starttime)) {
+				$student = $DB->get_record('user', array('id' => $studentid));
+				$teacher = $DB->get_record('user', array('id' => $slot->teacherid));
+				$vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
+				scheduler_send_email_from_template($student, $teacher, $course, 'newappointment', 'assigned', $vars, 'scheduler');
+			}
+			return true;
+		}
     }
+    return false;
+}
+
+/**
+ * Revoke appointment to a slot (teacher view) - handle notifications and calendar updates.
+ * @param int $slotid
+ * @param int $studentid
+ * @return boolean success or failure
+ */ 
+function scheduler_teacher_revoke_appointment($slotid, $studentid)
+{
+	global $DB;
+	
+	// load necessary objects
+	$slot = $DB->get_record('scheduler_slots', array('id' => $slotid));
+	$scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
+	$course = $DB->get_record('course', array('id' => $scheduler->course));
+	if ($appointments = $DB->get_records('scheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid), '', 'id,studentid')) {
+		$appointment = reset($appointments);
+    	scheduler_delete_appointment($appointment->id);
+    		
+    	// delete and recreate events for the slot
+        scheduler_delete_calendar_events($slot);
+        scheduler_add_update_calendar_events($slot, $course);
+    	
+        // notify student if this is a future slot
+        if ($scheduler->allownotifications && (time() < $slot->starttime)) {
+            $student = $DB->get_record('user', array('id'=>$appointment->studentid));
+            $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));        
+            $vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
+            scheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'scheduler');
+        }
+        
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Revoke appointment to a slot (student view) - handle notifications and calendar updates.
+ * @param int $slotid
+ * @param int $studentid
+ * @return boolean success or failure
+ */      
+function scheduler_student_revoke_appointment($slotid, $studentid)
+{
+	global $DB;
+	
+	// load necessary objects
+	$slot = $DB->get_record('scheduler_slots', array('id' => $slotid));
+	$scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
+	$course = $DB->get_record('course', array('id' => $scheduler->course));
+	if ($appointments = $DB->get_records('scheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid), '', 'id,studentid')) {
+		$appointment = reset($appointments);
+    	scheduler_delete_appointment($appointment->id);
+    		
+    	// delete and recreate events for the slot
+        scheduler_delete_calendar_events($slot);
+        scheduler_add_update_calendar_events($slot, $course);
+    	
+        // notify student if this is a future slot
+        if ($scheduler->allownotifications && (time() < $slot->starttime)) {
+            $student = $DB->get_record('user', array('id'=>$appointment->studentid));
+            $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));        
+            $vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
+            //scheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'scheduler');
+            scheduler_send_email_from_template($teacher, $student, $course, 'cancelledbystudent', 'cancelled', $vars, 'scheduler');
+        }
+        
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -862,7 +937,36 @@ function scheduler_teacher_appoint_student($slotid, $studentid) {
  */
 function scheduler_student_appoint_student($slotid, $studentid)
 {
-
+	global $DB;
+	
+	//load necessary objects
+	$slot = $DB->get_record('scheduler_slots', array('id'=>$slotid));
+	$scheduler = $DB->get_record('scheduler', array('id' => $slot->schedulerid));
+	$course = $DB->get_record('course', array('id' => $scheduler->course));
+	
+	if ($slot && $scheduler && $course)
+	{
+		$appointment = new stdClass();
+		$appointment->slotid = $slotid;
+		$appointment->studentid = $studentid;
+		$appointment->attended = 0;
+		$appointment->timecreated = time();
+		$appointment->timemodified = time();
+		$DB->insert_record('scheduler_appointment', $appointment);
+	
+		// update calendar	
+		scheduler_events_update($slot, $course);
+			
+		// notify teacher
+		if ($scheduler->allownotifications) {
+			$student = $DB->get_record('user', array('id' => $appointment->studentid));
+			$teacher = $DB->get_record('user', array('id' => $slot->teacherid));
+			$vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
+			scheduler_send_email_from_template($teacher, $student, $course, 'newappointment', 'applied', $vars, 'scheduler');
+		}
+		return true;
+    }
+    return false;
 }
         
 /**
