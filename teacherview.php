@@ -11,10 +11,7 @@
  * @todo add interface for assigning students to slots
  * @todo add "show past slots" toggle
  */
-
-
 defined('MOODLE_INTERNAL') || die();
-
 
 function get_slot_data(&$form){
 	global $USER;
@@ -120,9 +117,6 @@ if ($action == 'addslot'){
         $form->notes = '';
         $form->teacherid = $USER->id;
         $form->appointmentlocation = scheduler_get_last_location($scheduler);
-    } else {
-        $retcode = include "teacherview.subcontroller.php";
-        if ($retcode == -1) return -1;
     }
     
     /// print errors
@@ -174,9 +168,6 @@ if ($action == 'updateslot') {
         $form->studentid = required_param('studentid', PARAM_INT);
         $form->slotid = required_param('slotid', PARAM_INT);
         $form->what = 'doaddupdateslot';
-    } elseif($subaction != '') {
-        $retcode = include "teacherview.subcontroller.php";
-        if ($retcode == -1) return -1;
     }
     
     // print errors and notices
@@ -281,9 +272,6 @@ if ($action == 'schedule') {
             $appointment->timemodified = time();
             $form->appointments[$form->studentid] = $appointment;
         }
-    } elseif($subaction != '') {
-        $retcode = include "teacherview.subcontroller.php";
-        if ($retcode == -1) return -1;
     }
     
     // display error or advices
@@ -306,128 +294,9 @@ if ($action == 'schedule') {
     // return code for include
     return -1;
 }
-/************************************ Schedule a whole group in form ***********************************************/
-if ($action == 'schedulegroup') {
-    $form = new stdClass();
-    if($subaction == 'dochooseslot'){
-        /// set an advice message
-        unset($erroritem);
-        $erroritem->message = get_string('dontforgetsaveadvice', 'scheduler');
-        $erroritem->on = '';
-        $errors[] = $erroritem;
-        
-        $slotid = required_param('slotid', PARAM_INT);
-        if ($slot = $DB->get_record('scheduler_slots', array('id'=>$slotid))){
-            $form = &$slot;
-            $form->groupid = required_param('groupid', PARAM_INT);
-            $form->what = 'doaddupdateslot';
-            $form->slotid = $slotid;
-            $form->availableslots = scheduler_get_unappointed_slots($scheduler->id);
-            $appointments = array();
-            $members = groups_get_members($form->groupid);
-            
-            // add all group members to the slot, and match exclusivity
-            foreach($members as $member){
-                unset($appointment);
-                // hack for 1.8 / 1.9 compatibility of groups_get_members() call
-                if (is_numeric($member)){
-                    $appointment->studentid = $member;
-                } else {
-                    $appointment->studentid = $member->id;
-                }
-                $appointment->attended = optional_param('attended', 0, PARAM_INT);
-                $appointment->appointmentnote = optional_param('appointmentnote', '', PARAM_TEXT);
-                $appointment->timecreated = time();
-                $appointment->timemodified = time();
-                $appointments[$appointment->studentid] = $appointment;
-            }
-            $form->appointments = $appointments;
-        } else {
-            $form->groupid = $groupid;
-            $form->what = 'doaddupdateslot';
-            $form->slotid = 0;
-            $form->starttime = time();
-            $form->duration = 15;
-            $form->exclusivity = 1;
-            $form->hideuntil = $scheduler->timemodified; // supposed being in the past so slot is visible
-            $form->notes = '';
-            $form->teacherid = $USER->id;
-            $form->appointmentlocation = scheduler_get_last_location($scheduler);
-            $form->availableslots = scheduler_get_unappointed_slots($scheduler->id);
-            $form->appointments = unserialize(stripslashes(required_param('appointments', PARAM_RAW)));
-        }
-    } elseif($subaction == 'cancel') {
-        get_slot_data($form);
-        $form->appointments = unserialize(stripslashes(required_param('appointments', PARAM_RAW)));
-        $form->studentid = required_param('studentid', PARAM_INT);
-        $form->slotid = required_param('slotid', PARAM_INT);
-        $form->availableslots = scheduler_get_unappointed_slots($scheduler->id);
-        $form->what = 'doaddupdateslot';
-    } elseif(empty($subaction)) {
-        if (!empty($errors)){
-            get_slot_data($form);
-            $form->availableslots = scheduler_get_unappointed_slots($scheduler->id);
-            $form->groupid = required_param('groupid', PARAM_INT);
-            $form->slotid = optional_param('slotid', -1, PARAM_INT);
-        } else {
-            $form->groupid = required_param('groupid', PARAM_INT);
-            
-            /// getting available slots
-            $form->availableslots = scheduler_get_unappointed_slots($scheduler->id);
-            $form->what = 'doaddupdateslot' ;
-            $form->starttime = time();
-            $form->duration = $scheduler->defaultslotduration;
-            $form->hideuntil = $scheduler->timemodified; // supposed being in the past so slot is visible
-            $form->notes = '';
-            $form->teacherid = $USER->id;
-            $form->appointmentlocation = scheduler_get_last_location($scheduler);
-            $form->slotid = 0;
-            $members = groups_get_members($form->groupid);
-            $form->exclusivity = count($members);
-            foreach($members as $member){
-                unset($appointment);
-                $appointment->slotid = -1;
-                // hack for 1.8 / 1.9 compatibility of groups_get_members() call
-                if (is_numeric($member)){
-                    $appointment->studentid = $member;
-                } else {
-                    $appointment->studentid = $member->id;
-                }
-                $appointment->appointmentnote = '';
-                $appointment->timecreated = time();
-                $appointment->timemodified = time();
-                $form->appointments[$appointment->studentid] = $appointment;
-            }
-        }
-    } elseif($subaction != '') {
-        $retcode = include "teacherview.subcontroller.php";
-        if ($retcode == -1) return -1;
-    }
-    
-    // display error or advices
-    if (!empty($errors)){
-        $errorstr = '';
-        foreach($errors as $anError){
-            $errorstr .= $anError->message;
-        }
-        echo $OUTPUT->box($errorstr, 'errorbox');
-    }
-    
-    // diplay form
-    $form->group = $DB->get_record('groups', array('id'=>$form->groupid));
-    echo $OUTPUT->heading(get_string('scheduleappointment', 'scheduler', $form->group->name));
-    echo $OUTPUT->box_start('boxaligncenter');
-    include($CFG->dirroot.'/mod/scheduler/oneslotform.html');
-    echo $OUTPUT->box_end();
-    
-    // return code for include
-    return -1;
-}
+
 //****************** Standard view ***********************************************//
-
-
 /// print top tabs
-
 $tabrows = array();
 $row  = array();
 
