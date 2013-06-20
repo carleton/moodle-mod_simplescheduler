@@ -1,4 +1,7 @@
 <?php
+/**
+ * @todo review items and remove those that are no longer used.
+ */
 $string['pluginname'] = 'Scheduler';
 $string['pluginadministration'] = 'Scheduler administration';
 $string['modulename'] = 'Scheduler';
@@ -29,17 +32,14 @@ $string['scheduler:seeotherstudentsresults'] = 'See other slot student\'s result
 $string['onedaybefore'] = '1 day before slot';
 $string['oneweekbefore'] = '1 week before slot';
 $string['action'] = 'Slot Actions';
+$string['add_a_student_pulldown'] = 'Assign student ...';
 $string['addondays'] = 'Add appointments on';
-$string['addscheduled'] = 'Add scheduled student';
 $string['addsession'] = 'Add slots';
 $string['addsingleslot'] = 'Add single slot';
 $string['addslot'] = 'You can add additional appointment slots at any time.';
-$string['addstudenttogroup'] = 'Add this student to appointment group';
 $string['allappointments'] = 'All Appointments';
 $string['allowgroup'] = 'Exclusive slot - click to change';
 $string['allslotsincloseddays'] = 'All slots were in closed days';
-$string['allteachersgrading'] = 'Teachers can grade all appointments';
-$string['allteachersgrading_desc'] = 'When enabled, teachers can grade appointmenents they are not assigned to.';
 $string['alreadyappointed'] = 'Cannot make the appointment. The slot is already fully booked.';
 $string['appointagroup'] = 'Group appointment';
 $string['appointfor'] = 'Appoint for ';

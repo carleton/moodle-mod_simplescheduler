@@ -196,11 +196,11 @@ function scheduler_get_available_slots($studentid, $schedulerid, $studentside=fa
  * @param int $schedulerid
  * @return boolean
  */
-function scheduler_student_has_appointment($studentid, $schedulerid)
+function scheduler_student_has_appointment($studentid, $schedulerid, $force_refresh = false)
 {
 	global $DB;
 	static $has_appointment;
-	if (!isset($has_appointment[$studentid][$schedulerid]))
+	if (!isset($has_appointment[$studentid][$schedulerid]) || $force_refresh)
 	{
 		$sql = '
 			SELECT
@@ -847,7 +847,8 @@ function scheduler_teacher_appoint_student($slotid, $studentid) {
 			$appointment->timecreated = time();
 			$appointment->timemodified = time();
 			$DB->insert_record('scheduler_appointment', $appointment);
-	
+			scheduler_student_has_appointment($studentid, $scheduler->id, true); // refresh this
+			
 			// update calendar
 			scheduler_events_update($slot, $course);
 	

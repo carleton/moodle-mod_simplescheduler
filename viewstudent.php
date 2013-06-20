@@ -26,7 +26,7 @@ $usehtmleditor = can_use_html_editor();
 if ($subaction != ''){
     include $CFG->dirroot.'/mod/scheduler/viewstudent.controller.php'; 
 }
-
+ 
 scheduler_print_user($DB->get_record('user', array('id' => $studentid)), $course);
 
 //print tabs

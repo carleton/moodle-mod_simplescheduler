@@ -427,7 +427,7 @@ if ($slots){
                 $slotappointedstudentids[$appstudent->studentid] = $appstudent->studentid;
                 $appointedstudentids[$appstudent->studentid] = $appstudent->studentid;
                 if ($student) {
-                    $picture = $OUTPUT->user_picture($student);
+                    //$picture = $OUTPUT->user_picture($student);
                     $name = "<a href=\"view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$student->id}&amp;course={$scheduler->course}&amp;order=DESC\">".fullname($student).'</a>';
                 }
                 //$studentcolumn .= "$picture $name"; // need to work on formatting and link if we want pictures.
@@ -437,11 +437,41 @@ if ($slots){
             }
         } else {
             // slot is free
-            $studentcolumn = "None";
+            $studentcolumn = "";
             $slotappointedstudentids = array();
         }
         
         // lets make a form here that lets us add an eligible student
+        $form = '<div class="addStudent">';
+
+        // lets add add student form for this slot to actions (if available)
+        $form .= '<form name="addtoslotform" method="post" action="view.php?id=2">';
+        $form .= '<input type="hidden" value="addstudent" name="what"></input>';
+        $form .= '<input type="hidden" value="'.$cm->id.'" name="id"></input>';
+        $form .= '<input type="hidden" value="'.$slot->id.'" name="slotid"></input>';
+        $form .= '<input type="hidden" value="allappointments" name="page"></input>';
+        $form .= '<select name="studentid">';
+        $form .= '<option value="">'.get_string('add_a_student_pulldown', 'scheduler').'</option>';
+        foreach ($students as $studentid => $student)
+        {
+        	if (!isset($slotappointedstudentids[$studentid]))
+        	{
+        		if ($scheduler->schedulermode == 'oneonly')
+        		{
+        			if (scheduler_student_has_appointment($studentid, $scheduler->id))
+        			{
+        				continue; // student can only have one and already has one.
+        			}
+        		}
+        		$form .= '<option value="'.$studentid.'">'.fullname($student).'</option>';
+        	}
+        }
+        $form .= '<input type="submit" value="Add" name="go_btn"></input>';
+        $form .= '</form>';
+        $form .= '</div>';
+        
+        $studentcolumn .= $form;
+
         $studentArray[] = $studentcolumn;
         
         $actions = '<span style="font-size: x-small;">';
@@ -491,36 +521,7 @@ if ($slots){
             $actions .= ' ('.$slot->exclusivity.')';
         }
         $actions .= '</span>';
-        
-        $form = '<div class="addStudent">';
-        // lets add add student form for this slot to actions (if available)
-        $form .= '<form name="addtoslotform" method="post" action="view.php?id=2">';
-        $form .= '<input type="hidden" value="addstudent" name="what"></input>';
-        $form .= '<input type="hidden" value="'.$cm->id.'" name="id"></input>';
-        $form .= '<input type="hidden" value="'.$slot->id.'" name="slotid"></input>';
-        $form .= '<input type="hidden" value="allappointments" name="page"></input>';
-        $form .= '<select name="studentid">';
-        $form .= '<option value="">Add a student ...</option>';
-        foreach ($students as $studentid => $student)
-        {
-        	if (!isset($slotappointedstudentids[$studentid]))
-        	{
-        		if ($scheduler->schedulermode == 'oneonly')
-        		{
-        			if (scheduler_student_has_appointment($studentid, $scheduler->id))
-        			{
-        				continue; // student can only have one and already has one.
-        			}
-        		}
-        		$form .= '<option value="'.$studentid.'">'.fullname($student).'</option>';
-        	}
-        }
-        $form .= '<input type="submit" value="Add to slot" name="go_btn"></input>';
-        $form .= '</form>';
-        $form .= '</div>';
-        
-        $actions .= $form;
-        
+                
         if($page == 'myappointments'){
             $table->data[] = array (($offsetdate == $offsetdatemem) ? '' : $offsetdate, $offsettime, $endtime, implode("\n",$studentArray), $actions);
         } else {
