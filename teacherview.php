@@ -8,8 +8,7 @@
  * @copyright  2011 Henning Bostelmann and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @todo add interface for assigning students to slots
- * @todo add "show past slots" toggle
+ * @todo consider "past slots" toggle
  */
 defined('MOODLE_INTERNAL') || die();
 
@@ -401,6 +400,7 @@ if ($slots){
     $table->attributes = array('class' => 'generaltable boxaligncenter');
     $offsetdatemem = '';
     $appointedstudentids = '';
+    $has_appointment = array();
     foreach($slots as $slot) {
         
         //if (!$slot->isappointed && $slot->starttime + (60 * $slot->duration) < time()) {
@@ -427,10 +427,8 @@ if ($slots){
                 $slotappointedstudentids[$appstudent->studentid] = $appstudent->studentid;
                 $appointedstudentids[$appstudent->studentid] = $appstudent->studentid;
                 if ($student) {
-                    //$picture = $OUTPUT->user_picture($student);
                     $name = "<a href=\"view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$student->id}&amp;course={$scheduler->course}&amp;order=DESC\">".fullname($student).'</a>';
                 }
-                //$studentcolumn .= "$picture $name"; // need to work on formatting and link if we want pictures.
                 $studentcolumn .= "<p>$name";
                 $studentcolumn .= "<span style=\"font-size: x-small;\"><a href=\"view.php?what=revokeone&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;studentid={$student->id}&amp;page={$page}\" title=\"{$strrevoke}\"><img align=\"right\" src=\"{$CFG->wwwroot}/pix/t/delete.gif\" alt=\"{$strrevoke}\" /></a></span></p>";
         
@@ -440,82 +438,82 @@ if ($slots){
             $studentcolumn = "";
             $slotappointedstudentids = array();
         }
-        
-        // lets make a form here that lets us add an eligible student
-        $form = '<div class="addStudent">';
 
-        // lets add add student form for this slot to actions (if available)
-        $form .= '<form name="addtoslotform" method="post" action="view.php?id=2">';
-        $form .= '<input type="hidden" value="addstudent" name="what"></input>';
-        $form .= '<input type="hidden" value="'.$cm->id.'" name="id"></input>';
-        $form .= '<input type="hidden" value="'.$slot->id.'" name="slotid"></input>';
-        $form .= '<input type="hidden" value="allappointments" name="page"></input>';
-        $form .= '<select name="studentid">';
-        $form .= '<option value="">'.get_string('add_a_student_pulldown', 'scheduler').'</option>';
-        foreach ($students as $studentid => $student)
+		$eligible_to_add = array();
+		// lets find out if we have eligible students to add to this slot
+		foreach ($students as $studentid => $student)
         {
         	if (!isset($slotappointedstudentids[$studentid]))
         	{
         		if ($scheduler->schedulermode == 'oneonly')
         		{
-        			if (scheduler_student_has_appointment($studentid, $scheduler->id))
+        			if (!isset($has_appointment[$studentid]))
         			{
-        				continue; // student can only have one and already has one.
+        				$has_appointment[$studentid] = scheduler_student_has_appointment($studentid, $scheduler->id);
         			}
+        			if ($has_appointment[$studentid]) continue; // student can only have one and already has one.
         		}
-        		$form .= '<option value="'.$studentid.'">'.fullname($student).'</option>';
+        		$eligible_to_add[$studentid] = $student;
         	}
         }
-        $form .= '<input type="submit" value="Add" name="go_btn"></input>';
-        $form .= '</form>';
-        $form .= '</div>';
-        
-        $studentcolumn .= $form;
-
-        $studentArray[] = $studentcolumn;
+		
+		if (!empty($eligible_to_add))
+		{
+			// lets make a form here that lets us add an eligible student
+			$form = '<div class="addStudent">';
+			// lets add add student form for this slot to actions (if available)
+			$form .= '<form name="addtoslotform" method="post" action="view.php?id=2">';
+			$form .= '<input type="hidden" value="addstudent" name="what"></input>';
+			$form .= '<input type="hidden" value="'.$cm->id.'" name="id"></input>';
+			$form .= '<input type="hidden" value="'.$slot->id.'" name="slotid"></input>';
+			$form .= '<input type="hidden" value="allappointments" name="page"></input>';
+			$form .= '<select name="studentid">';
+			$form .= '<option value="">'.get_string('add_a_student_pulldown', 'scheduler').'</option>';
+			foreach ($eligible_to_add as $studentid => $student)
+			{
+				$form .= '<option value="'.$studentid.'">'.fullname($student).'</option>';
+			}
+			$form .= '<input type="submit" value="Add" name="go_btn"></input>';
+			$form .= '</form>';
+			$form .= '</div>';
+			$studentcolumn .= $form;
+		}
+		
+        $studentArray[] = (!empty($studentcolumn)) ? $studentcolumn : get_string('empty_slot_no_availability', 'scheduler');
         
         $actions = '<span style="font-size: x-small;">';
         if ($USER->id == $slot->teacherid || has_capability('mod/scheduler:manageallappointments', $context)){
             
             $strdelete = get_string('delete');
             $stredit = get_string('move','scheduler');
-            $strattended = get_string('attended','scheduler');
             $strnonexclusive = get_string('isnonexclusive', 'scheduler');
             $strallowgroup = get_string('allowgroup', 'scheduler');
             $strforbidgroup = get_string('forbidgroup', 'scheduler');
             
             $actions .= "<a href=\"view.php?what=deleteslot&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strdelete}\"><img src=\"{$CFG->wwwroot}/pix/t/delete.gif\" alt=\"{$strdelete}\" /></a>";
             $actions .= "&nbsp;<a href=\"view.php?what=updateslot&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$stredit}\"><img src=\"{$CFG->wwwroot}/pix/t/edit.gif\" alt=\"{$stredit}\" /></a>";
-            if ($slot->isattended){
-                $actions .= "&nbsp;<img src=\"{$CFG->wwwroot}/pix/c/group.gif\" title=\"{$strattended}\" />";
-            } else {
-                if ($slot->isappointed > 1){
+            if ($slot->isappointed > 1){
                     $actions .= "&nbsp;<img src=\"{$CFG->wwwroot}/pix/c/group.gif\" title=\"{$strnonexclusive}\" />";
                 } else {
-                    if ($slot->exclusivity == 1){
-                        $actions .= "&nbsp;<a href=\"view.php?what=allowgroup&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strallowgroup}\"><img src=\"{$CFG->wwwroot}/pix/t/groupn.gif\" alt=\"{$strallowgroup}\" /></a>";
-                    } else {
-                        $actions .= "&nbsp;<a href=\"view.php?what=forbidgroup&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strforbidgroup}\"><img src=\"{$CFG->wwwroot}/pix/t/groupv.gif\" alt=\"{$strforbidgroup}\" /></a>";
-                    }
+                if ($slot->exclusivity == 1){
+                    $actions .= "&nbsp;<a href=\"view.php?what=allowgroup&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strallowgroup}\"><img src=\"{$CFG->wwwroot}/pix/t/groupn.gif\" alt=\"{$strallowgroup}\" /></a>";
+                } else {
+                	$actions .= "&nbsp;<a href=\"view.php?what=forbidgroup&amp;id={$cm->id}&amp;slotid={$slot->id}&amp;page={$page}\" title=\"{$strforbidgroup}\"><img src=\"{$CFG->wwwroot}/pix/t/groupv.gif\" alt=\"{$strforbidgroup}\" /></a>";
                 }
             }
+            
         } else {
             // just signal group status
-            if ($slot->isattended){
-                $actions .= "&nbsp;<img src=\"{$CFG->wwwroot}/pix/c/group.gif\" title=\"{$strattended}\" />";
+            if ($slot->isappointed > 1)  {
+                $actions .= "&nbsp;<img src=\"{$CFG->wwwroot}/pix/c/group.gif\" title=\"{$strnonexclusive}\" />";
             } else {
-                if ($slot->isappointed > 1){
-                    $actions .= "&nbsp;<img src=\"{$CFG->wwwroot}/pix/c/group.gif\" title=\"{$strnonexclusive}\" />";
+                if ($slot->exclusivity == 1){
+                    $actions .= "&nbsp;<img src=\"{$CFG->wwwroot}/pix/t/groupn.gif\" title=\"{$strallowgroup}\" />";
                 } else {
-                    if ($slot->exclusivity == 1){
-                        $actions .= "&nbsp;<img src=\"{$CFG->wwwroot}/pix/t/groupn.gif\" title=\"{$strallowgroup}\" />";
-                    } else {
-                        $actions .= "&nbsp;<img src=\"{$CFG->wwwroot}/pix/t/groupv.gif\" title=\"{$strforbidgroup}\" />";
-                    }
+                    $actions .= "&nbsp;<img src=\"{$CFG->wwwroot}/pix/t/groupv.gif\" title=\"{$strforbidgroup}\" />";
                 }
             }
         }
-        
         
         if ($slot->exclusivity > 1){
             $actions .= ' ('.$slot->exclusivity.')';
@@ -576,7 +574,8 @@ if ($sqlcount > 25) {
     <tr valign="top">
         <td width="50%">
 <?php
-echo $OUTPUT->heading(get_string('schedulestudents', 'scheduler'));
+
+//echo $OUTPUT->heading(get_string('schedulestudents', 'scheduler'));
 
 if (!$students) {
     $nostudentstr = get_string('noexistingstudents','scheduler');
@@ -695,7 +694,7 @@ if (!$students) {
         // print table of students who still have to make appointments
         echo html_writer::table($mtable);
     } else {
-        echo $OUTPUT->notification(get_string('nostudents', 'scheduler'));
+        echo $OUTPUT->notification(get_string('allappointed', 'scheduler'));
     }
 }
 ?>

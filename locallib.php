@@ -159,6 +159,8 @@ function scheduler_get_unappointed_slots($schedulerid){
  * @param boolean $studentside changes query if we are getting slots in student context
  * @uses $CFG
  * @uses $DB
+ *
+ * @todo do we need to retain this studentside appointedbyme thing?
  */
 function scheduler_get_available_slots($studentid, $schedulerid, $studentside=false){
     global $CFG, $DB;
@@ -196,13 +198,10 @@ function scheduler_get_available_slots($studentid, $schedulerid, $studentside=fa
  * @param int $schedulerid
  * @return boolean
  */
-function scheduler_student_has_appointment($studentid, $schedulerid, $force_refresh = false)
+function scheduler_student_has_appointment($studentid, $schedulerid)
 {
 	global $DB;
-	static $has_appointment;
-	if (!isset($has_appointment[$studentid][$schedulerid]) || $force_refresh)
-	{
-		$sql = '
+	$sql = '
 			SELECT
 			COUNT(*)
 			FROM
@@ -213,9 +212,7 @@ function scheduler_student_has_appointment($studentid, $schedulerid, $force_refr
 			a.studentid = ? AND
 			s.schedulerid = ?
     	';
-    	$has_appointment[$studentid][$schedulerid] = $DB->count_records_sql($sql, array($studentid, $schedulerid));
-    }
-    return ($has_appointment[$studentid][$schedulerid]);
+    return ($DB->count_records_sql($sql, array($studentid, $schedulerid)));
 }
 
 /**
@@ -847,7 +844,6 @@ function scheduler_teacher_appoint_student($slotid, $studentid) {
 			$appointment->timecreated = time();
 			$appointment->timemodified = time();
 			$DB->insert_record('scheduler_appointment', $appointment);
-			scheduler_student_has_appointment($studentid, $scheduler->id, true); // refresh this
 			
 			// update calendar
 			scheduler_events_update($slot, $course);
@@ -916,7 +912,7 @@ function scheduler_student_revoke_appointment($slotid, $studentid)
 	if ($appointments = $DB->get_records('scheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid), '', 'id,studentid')) {
 		$appointment = reset($appointments);
     	scheduler_delete_appointment($appointment->id);
-    		
+    	
     	// delete and recreate events for the slot
         scheduler_delete_calendar_events($slot);
         scheduler_add_update_calendar_events($slot, $course);
@@ -958,7 +954,7 @@ function scheduler_student_appoint_student($slotid, $studentid)
 		$appointment->timecreated = time();
 		$appointment->timemodified = time();
 		$DB->insert_record('scheduler_appointment', $appointment);
-	
+    	
 		// update calendar	
 		scheduler_events_update($slot, $course);
 			

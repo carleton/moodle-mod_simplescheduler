@@ -161,8 +161,11 @@ if ($action == 'disengage') {
     $appointments = $DB->get_records_select('scheduler_appointment', $where, $params);
     if ($appointments) {
         foreach($appointments as $appointment) {
-            $oldslot = $DB->get_record('scheduler_slots', array('id' => $appointment->slotid));
-            scheduler_student_revoke_appointment($oldslot->id, $USER->id);
+            $slot = $DB->get_record('scheduler_slots', array('id' => $appointment->slotid));
+            if ($slot->starttime > time()) // only modify future slots
+            {
+            	scheduler_student_revoke_appointment($slot->id, $USER->id);
+            }
         }
     }
 }

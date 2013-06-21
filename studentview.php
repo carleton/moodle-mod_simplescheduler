@@ -24,20 +24,6 @@ if (trim(strip_tags($scheduler->intro))) {
     echo $OUTPUT->box_end();
 }
 
-$OUTPUT->box_start('center', '80%');
-if (scheduler_has_slot($USER->id, $scheduler, true)) {
-    if ($scheduler->schedulermode == 'oneonly') {	
-    	print_string('welcomebackstudent', 'scheduler');
-    }
-    else print_string('welcomebackstudentmulti', 'scheduler');
-} else {
-	if ($scheduler->schedulermode == 'oneonly') {
-		print_string('welcomenewstudent', 'scheduler');
-	}
-	else print_string('welcomenewstudentmulti', 'scheduler');
-}
-$OUTPUT->box_end();
-
 // clean all late slots (for every body, anyway, they are passed !!)
 scheduler_free_late_unused_slots($scheduler->id);
 
@@ -45,7 +31,6 @@ scheduler_free_late_unused_slots($scheduler->id);
 $hasappointment = scheduler_student_has_appointment($USER->id, $scheduler->id);
 
 /// get available slots
-
 $haveunattendedappointments = false;
 
 // this grabs all slots that are available or already appointed for the user.
@@ -104,7 +89,7 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
         }
     }
 
-    /// prepare appointed slot table
+	/// prepare appointed slot table
     
     if (count($studentPastAppointedSlots)){
         echo $OUTPUT->heading(get_string('attendedslots' ,'scheduler'));
@@ -155,86 +140,108 @@ if ($slots = scheduler_get_available_slots($USER->id, $scheduler->id, true)) {
         echo html_writer::table($table);
     }
 
-    /// prepare appointable slot table
+	$OUTPUT->box_start('center', '80%');
+	if ($scheduler->schedulermode == 'oneonly' && !empty($studentPastAppointedSlots)) {
+		print_string('welcomealreadyappointed', 'scheduler');
+		$closed = true;
+	}
+	elseif (empty($studentSlots))
+	{
+		print_string('welcomestudentnothingavailable', 'scheduler');
+		$closed = true;
+	}
+	elseif (scheduler_has_slot($USER->id, $scheduler, true)) {
+		if ($scheduler->schedulermode == 'oneonly') {
+			print_string('welcomebackstudent', 'scheduler');
+		}
+		else print_string('welcomebackstudentmulti', 'scheduler');
+		$closed = false;
+	}
+	else {
+		if ($scheduler->schedulermode == 'oneonly') {
+			print_string('welcomenewstudent', 'scheduler');
+		}
+		else print_string('welcomenewstudentmulti', 'scheduler');
+		$closed = false;
+	}
+	$OUTPUT->box_end();
+	
+	if (!$closed) {
+    	// prepare appointable slot table
+    	echo $OUTPUT->heading(get_string('slots' ,'scheduler'));
+    	$slottable = new html_table;
+		$slottable->head  = array ($strdate, $strstart, $strend, get_string('location', 'scheduler'), get_string('choice', 'scheduler'), s(scheduler_get_teacher_name($scheduler)), get_string('groupsession', 'scheduler'));
+		$slottable->align = array ('left', 'left', 'left', 'left', 'center', 'left', 'left');
+		$slottable->data = array();
+		$previousdate = '';
+		$previoustime = 0;
+		$previousendtime = 0;
+		$canappoint = false;
+		foreach($studentSlots as $key => $aSlot){
+			$startdate = scheduler_userdate($aSlot->starttime,1);
+			$starttime = scheduler_usertime($aSlot->starttime,1);
+			$endtime = scheduler_usertime($aSlot->starttime + ($aSlot->duration * 60),1);
+			$startdatestr = ($startdate == $previousdate) ? '' : $startdate ;
+			$starttimestr = ($starttime == $previoustime) ? '' : $starttime ;
+			$endtimestr = ($endtime == $previousendtime) ? '' : $endtime ;
+			$location = s($aSlot->appointmentlocation);
+		
+		   if ($aSlot->appointedbyme){
+				$teacher = $DB->get_record('user', array('id'=>$aSlot->teacherid));
+				if ($scheduler->schedulermode == 'multi') {
+					$radio = "<input type=\"checkbox\" name=\"slotid[{$aSlot->id}]\" value=\"{$aSlot->id}\" checked=\"checked\" />\n";
+				} else {
+					$radio = "<input type=\"radio\" name=\"slotid\" value=\"{$aSlot->id}\" checked=\"checked\" />\n";
+				}
+				$slottable->data[] = array ("<b>$startdatestr</b>", "<b>$starttime</b>", "<b>$endtime</b>", "<b>$location</b>",
+					$radio, "<b>"."<a href=\"../../user/view.php?id={$aSlot->teacherid}&amp;course=$scheduler->course\">".fullname($teacher).'</a></b>','<b>'.$aSlot->groupsession.'</b>');
+			} else {
+				if ($aSlot->appointed and has_capability('mod/scheduler:seeotherstudentsbooking', $context)){
+					$appointments = scheduler_get_appointments($aSlot->id);
+					$collegues = "<div style=\"visibility:hidden; display:none\" id=\"collegues{$aSlot->id}\"><br/>";
+					foreach($appointments as $appstudent){
+						$student = $DB->get_record('user', array('id'=>$appstudent->studentid));
+						$picture = $OUTPUT->user_picture($student, array('courseid'=>$course->id));
+						$name = "<a href=\"view.php?id={$cm->id}&amp;what=viewstudent&amp;studentid={$student->id}&amp;course={$scheduler->course}&amp;order=DESC\">".fullname($student).'</a>';
+						$collegues .= " $picture $name<br/>";
+					}
+					$collegues .= '</div>';
+					$aSlot->groupsession .= " <a href=\"javascript:toggleVisibility('{$aSlot->id}')\"><img name=\"group<?php p($aSlot->id) ?>\" src=\"{$CFG->wwwroot}/pix/t/switch_plus.gif\" border=\"0\" title=\"".get_string('whosthere', 'scheduler')."\"></a> {$collegues}";
+				}
+				$canappoint = true;
+				$canusegroup = ($aSlot->appointed) ? 0 : 1;
+				if ($scheduler->schedulermode == 'multi') {
+					$radio = "<input type=\"checkbox\" name=\"slotid[{$aSlot->id}]\" value=\"{$aSlot->id}\" onclick=\"checkGroupAppointment($canusegroup)\" />\n";
+				} else {
+					$radio = "<input type=\"radio\" name=\"slotid\" value=\"{$aSlot->id}\" onclick=\"checkGroupAppointment($canusegroup)\" />\n";
+				}
+				$teacher = $DB->get_record('user', array('id'=>$aSlot->teacherid));
+				$slottable->data[] = array ($startdatestr, $starttimestr, $endtimestr, $location,
+					$radio, "<a href=\"../../user/view.php?id={$aSlot->teacherid}&amp;course={$scheduler->course}\">".fullname($teacher).'</a>', $aSlot->groupsession);
+			}
+			$previoustime = $starttime;
+			$previousendtime = $endtime;
+			$previousdate = $startdate;
+		}
     
-    echo $OUTPUT->heading(get_string('slots' ,'scheduler'));
-    
-    $table = new html_table;
-    $table->head  = array ($strdate, $strstart, $strend, get_string('location', 'scheduler'), get_string('choice', 'scheduler'), s(scheduler_get_teacher_name($scheduler)), get_string('groupsession', 'scheduler'));
-    $table->align = array ('left', 'left', 'left', 'left', 'center', 'left', 'left');
-    $table->data = array();
-    $previousdate = '';
-    $previoustime = 0;
-    $previousendtime = 0;
-    $canappoint = false;
-    foreach($studentSlots as $key => $aSlot){
-        $startdate = scheduler_userdate($aSlot->starttime,1);
-        $starttime = scheduler_usertime($aSlot->starttime,1);
-        $endtime = scheduler_usertime($aSlot->starttime + ($aSlot->duration * 60),1);
-        $startdatestr = ($startdate == $previousdate) ? '' : $startdate ;
-        $starttimestr = ($starttime == $previoustime) ? '' : $starttime ;
-        $endtimestr = ($endtime == $previousendtime) ? '' : $endtime ;
-        $location = s($aSlot->appointmentlocation);
-        
-       if ($aSlot->appointedbyme){
-            $teacher = $DB->get_record('user', array('id'=>$aSlot->teacherid));
-            if ($scheduler->schedulermode == 'multi') {
-            	$radio = "<input type=\"checkbox\" name=\"slotid[{$aSlot->id}]\" value=\"{$aSlot->id}\" checked=\"checked\" />\n";
-            } else {
-            	$radio = "<input type=\"radio\" name=\"slotid\" value=\"{$aSlot->id}\" checked=\"checked\" />\n";
-            }
-            $table->data[] = array ("<b>$startdatestr</b>", "<b>$starttime</b>", "<b>$endtime</b>", "<b>$location</b>",
-            	$radio, "<b>"."<a href=\"../../user/view.php?id={$aSlot->teacherid}&amp;course=$scheduler->course\">".fullname($teacher).'</a></b>','<b>'.$aSlot->groupsession.'</b>');
-        } else {
-            if ($aSlot->appointed and has_capability('mod/scheduler:seeotherstudentsbooking', $context)){
-                $appointments = scheduler_get_appointments($aSlot->id);
-                $collegues = "<div style=\"visibility:hidden; display:none\" id=\"collegues{$aSlot->id}\"><br/>";
-                foreach($appointments as $appstudent){
-                    $student = $DB->get_record('user', array('id'=>$appstudent->studentid));
-                    $picture = $OUTPUT->user_picture($student, array('courseid'=>$course->id));
-                    $name = "<a href=\"view.php?id={$cm->id}&amp;what=viewstudent&amp;studentid={$student->id}&amp;course={$scheduler->course}&amp;order=DESC\">".fullname($student).'</a>';
-                    $collegues .= " $picture $name<br/>";
-                }
-                $collegues .= '</div>';
-                $aSlot->groupsession .= " <a href=\"javascript:toggleVisibility('{$aSlot->id}')\"><img name=\"group<?php p($aSlot->id) ?>\" src=\"{$CFG->wwwroot}/pix/t/switch_plus.gif\" border=\"0\" title=\"".get_string('whosthere', 'scheduler')."\"></a> {$collegues}";
-            }
-            $canappoint = true;
-            $canusegroup = ($aSlot->appointed) ? 0 : 1;
-            if ($scheduler->schedulermode == 'multi') {
-            	$radio = "<input type=\"checkbox\" name=\"slotid[{$aSlot->id}]\" value=\"{$aSlot->id}\" onclick=\"checkGroupAppointment($canusegroup)\" />\n";
-            } else {
-            	$radio = "<input type=\"radio\" name=\"slotid\" value=\"{$aSlot->id}\" onclick=\"checkGroupAppointment($canusegroup)\" />\n";
-            }
-            $teacher = $DB->get_record('user', array('id'=>$aSlot->teacherid));
-            $table->data[] = array ($startdatestr, $starttimestr, $endtimestr, $location,
-            	$radio, "<a href=\"../../user/view.php?id={$aSlot->teacherid}&amp;course={$scheduler->course}\">".fullname($teacher).'</a>', $aSlot->groupsession);
-        }
-        $previoustime = $starttime;
-        $previousendtime = $endtime;
-        $previousdate = $startdate;
-    }
-    
-    /// print slot table
-    
-    if (count($table->data)){
-        ?>
-        <form name="appoint" action="view.php" method="get">
-        <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
-        <input type="hidden" name="what" value="savechoice" />
-        <script type="text/javascript">
-        function checkGroupAppointment(enable){
-            var numgroups = '<?php p(count($mygroups)) ?>';
-            if (!enable){
-                if (numgroups > 1){ // we have a select. we must force "appointsolo".
-                    document.forms['appoint'].elements['appointgroup'].options[0].selected = true;
-                }
-            }
-            document.forms['appoint'].elements['appointgroup'].disabled = !enable;
-        }  
-        </script>
-<?php
-echo html_writer::table($table);
-
+    	/// print slot table
+    	if (count($slottable->data)) {
+        	echo '<form name="appoint" action="view.php" method="get">';
+        	echo '<input type="hidden" name="id" value="'. $cm->id . '" />';
+        	echo '<input type="hidden" name="what" value="savechoice" />';
+        	echo '<script type="text/javascript">';
+        	echo 'function checkGroupAppointment(enable) {';
+            echo "var numgroups = '". count($mygroups) ."'";
+            echo 'if (!enable){';
+            echo '    if (numgroups > 1){ // we have a select. we must force "appointsolo".';
+            echo "        document.forms['appoint'].elements['appointgroup'].options[0].selected = true;";
+            echo '    }';
+            echo '}';
+            echo "document.forms['appoint'].elements['appointgroup'].disabled = !enable;";
+        	echo '}';  
+        	echo '</script>';
+			echo html_writer::table($slottable);
+		}
 /// add some global script        
 
 ?>
@@ -285,7 +292,6 @@ echo '</form>';
 if ($haveunattendedappointments and has_capability('mod/scheduler:disengage', $context)){
     echo "<br/><a href=\"view.php?id={$cm->id}&amp;what=disengage\">".get_string('disengage','scheduler').'</a>';
 }
-
 }
 else {
     if ($minhidedate > time()){
@@ -296,7 +302,8 @@ else {
     }
     $OUTPUT->box($noslots, 'center', '70%');
 }
-} else {
+}
+else {
     notify(get_string('noslots', 'scheduler'));
 }
 ?>
