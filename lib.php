@@ -15,7 +15,6 @@ defined('MOODLE_INTERNAL') || die();
 include_once $CFG->dirroot.'/mod/scheduler/locallib.php';
 include_once $CFG->dirroot.'/mod/scheduler/mailtemplatelib.php';
 
-define('SCHEDULER_TIMEUNKNOWN', 0);  // This is used for appointments for which no time is entered
 define('SCHEDULER_SELF', 0); // Used for setting conflict search scope 
 define('SCHEDULER_OTHERS', 1); // Used for setting conflict search scope 
 define('SCHEDULER_ALL', 2); // Used for setting conflict search scope 
@@ -162,8 +161,6 @@ function scheduler_cron () {
     }
     return true;
 }
-
-
 
 /**
  * Returns the users with data in one scheduler
