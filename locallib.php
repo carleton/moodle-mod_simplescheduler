@@ -7,9 +7,6 @@
  * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @todo should we remove and stop calling simplescheduler_free_late_unused_slots?
- * @todo notifications are send indiscriminately right now should we skip them for appointments that have passed?
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -385,42 +382,6 @@ function simplescheduler_get_last_location(&$simplescheduler){
     }
     return $lastlocation;
 }
-
-/**
- * frees all slots unapppointed that are in the past
- * @param int $simpleschedulerid
- * @param int $now give a date reference for measuring the "past" ! If 0, uses current time
- * @uses $CFG
- * @uses $DB
- * @return void
- */
-function simplescheduler_free_late_unused_slots($simpleschedulerid, $now=0){
-    global $CFG, $DB;
-    
-    if(!$now) {
-        $now = time();
-    }
-    $sql = '
-        SELECT DISTINCT
-        s.id
-        FROM
-        {simplescheduler_slots} s
-        LEFT JOIN
-        {simplescheduler_appointment} a
-        ON
-        s.id = a.slotid
-        WHERE
-        a.studentid IS NULL AND
-        s.simpleschedulerid = ? AND
-        starttime < ?
-        ';
-    $to_delete = $DB->get_records_sql($sql, array($simpleschedulerid, $now));
-    if ($to_delete){
-        list($usql, $params) = $DB->get_in_or_equal(array_keys($to_delete));
-        $DB->delete_records_select('simplescheduler_slots', " id $usql ", $params);
-    }
-}
-
 
 /// Events related functions
 

@@ -26,9 +26,6 @@ if (trim(strip_tags($simplescheduler->intro))) {
     echo $OUTPUT->box_end();
 }
 
-// clean all late slots (for every body, anyway, they are passed !!)
-simplescheduler_free_late_unused_slots($simplescheduler->id);
-
 /// does this student have an appointment?    
 $hasappointment = simplescheduler_student_has_appointment($USER->id, $simplescheduler->id);
 
