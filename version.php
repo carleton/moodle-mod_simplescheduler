@@ -15,8 +15,8 @@ defined('MOODLE_INTERNAL') || die();
  * This is the development branch (master) of the simple simplesscheduler module.
  */
 
-$module->version  = 2013061800;       // The current module version (Date: YYYYMMDDXX)
-$module->release  = '3.x dev';        // Human-friendly version name
+$module->version  = 2013070400;       // The current module version (Date: YYYYMMDDXX)
+$module->release  = '.9 dev';        // Human-friendly version name
 $module->requires = 2012062500;       // Requires Moodle 2.3
 $module->maturity = MATURITY_ALPHA;   // Alpha development code - not for production sites
 

@@ -15,16 +15,16 @@ http://www.gnu.org/copyleft/gpl.html
 
 === Description ===
 
-The Scheduler module helps you to schedule appointments with your students. 
+The Simple Scheduler module helps you to schedule appointments with your students. 
 Teachers specify time slots for meetings, students then choose one of them on Moodle.
 Teacher can record comments on the meeting within the module.
 
 
 === Installation instructions ===
 
-Place the code of the module into the mod/scheduler directory of your Moodle
+Place the code of the module into the mod/simplescheduler directory of your Moodle
 directory root. That is, the present file should be located at:
-mod/scheduler/README.txt
+mod/simplescheduler/README.txt
 
 For further installation instructions please see:
     http://docs.moodle.org/en/Installing_contributed_modules_or_plugins
@@ -34,14 +34,16 @@ This module is intended for Moodle 2.3 and above.
 
 === Authors ===
 
-This fork of scheduler is maintained by 
- Nathan White, Carleton College <nwhite@carleton.edu>
- 
-The current maintainer of Scheduler is:
- Henning Bostelmann, University of York <henning.bostelmann@york.ac.uk>
+simplescheduler is a fork of scheduler that aims for the following:
+
+* support for single and multiple slot signup
+* simplified UI that supports just core scheduling functionality
+
+The fork is maintained by Nathan White, Carleton College <nwhite@carleton.edu>
 
 Based on previous work by:
 
+* Henning Bostelmann, University of York <henning.bostelmann@york.ac.uk>
 * Gustav Delius <gustav.delius@york.ac.uk> (until Moodle 1.7)
 * Valery Fremaux <valery.fremaux@club-internet.fr> (Moodle 1.8 - Moodle 1.9)
 
@@ -51,7 +53,6 @@ With further contributions taken from:
 * Andriy Semenets (Russian and Ukrainian localization)
 * Gaël Mifsud (French localization)
 * Various authors of the core Moodle code
-
 
 === Release notes ===
 

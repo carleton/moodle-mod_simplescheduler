@@ -4,6 +4,8 @@
  *
  * @package    mod
  * @subpackage simplesscheduler
+ *
+ * @todo review these are they all still necessary and correct?
  */
 
 $capabilities = array(
@@ -127,8 +129,5 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     )
-
 );
-
-
 ?>

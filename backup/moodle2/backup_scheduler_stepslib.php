@@ -25,20 +25,20 @@ class backup_simplesscheduler_activity_structure_step extends backup_activity_st
         // Define each element separated
         $simplesscheduler = new backup_nested_element('simplesscheduler', array('id'), array(
             'name', 'intro', 'introformat', 'simplesschedulermode',
-            'reuseguardtime', 'defaultslotduration', 'allownotifications', 'staffrolename',
-            'teacher', 'scale', 'gradingstrategy', 'timemodified'));
+            'defaultslotduration', 'allownotifications', 'staffrolename',
+            'teacher', 'timemodified'));
 
         $slots = new backup_nested_element('slots');
 
         $slot = new backup_nested_element('slot', array('id'), array(
             'starttime', 'duration', 'teacherid', 'appointmentlocation',
-            'reuse', 'timemodified', 'notes', 'exclusivity',
+            'timemodified', 'notes', 'exclusivity',
             'appointmentnote', 'emaildate', 'hideuntil'));
 
         $appointments = new backup_nested_element('appointments');
 
         $appointment = new backup_nested_element('appointment', array('id'), array(
-            'studentid', 'attended', 'grade', 'appointmentnote',
+            'studentid', 'appointmentnote',
             'timecreated', 'timemodified'));
 
         // Build the tree
