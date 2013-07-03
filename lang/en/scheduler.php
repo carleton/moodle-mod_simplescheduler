@@ -5,27 +5,27 @@
 $string['pluginname'] = 'Scheduler';
 $string['pluginadministration'] = 'Scheduler administration';
 $string['modulename'] = 'Scheduler';
-$string['modulename_help'] = 'The scheduler activity helps you in scheduling appointments with your students. 
+$string['modulename_help'] = 'The simplesscheduler activity helps you in scheduling appointments with your students. 
 
 Teachers specify time slots for meetings, students then choose one of them on Moodle.
 
-Teachers in turn can record comments about the meeting within the scheduler.
+Teachers in turn can record comments about the meeting within the simplesscheduler.
 
 Group scheduling is supported; that is, each time slot can accomodate several students.';
-$string['modulename_link'] = 'mod/scheduler/view';
+$string['modulename_link'] = 'mod/simplesscheduler/view';
 $string['modulenameplural'] = 'Schedulers';
 
 /* ***** Capabilities ****** */
-$string['scheduler:addinstance'] = 'Add a new scheduler';
-$string['scheduler:appoint'] = 'Appoint';
-$string['scheduler:attend'] = 'Attend students';
-$string['scheduler:canscheduletootherteachers'] = 'Schedule appointments for other staff members';
-$string['scheduler:canseeotherteachersbooking'] = 'See and browse other teachers booking';
-$string['scheduler:disengage'] = 'Drop all appointments (students)';
-$string['scheduler:manage'] = 'Manage your slots and appointments';
-$string['scheduler:manageallappointments'] = 'Manage all scheduler data';
-$string['scheduler:seeotherstudentsbooking'] = 'See other student booking on the slot';
-$string['scheduler:seeotherstudentsresults'] = 'See other slot student\'s result';
+$string['simplesscheduler:addinstance'] = 'Add a new simplesscheduler';
+$string['simplesscheduler:appoint'] = 'Appoint';
+$string['simplesscheduler:attend'] = 'Attend students';
+$string['simplesscheduler:canscheduletootherteachers'] = 'Schedule appointments for other staff members';
+$string['simplesscheduler:canseeotherteachersbooking'] = 'See and browse other teachers booking';
+$string['simplesscheduler:disengage'] = 'Drop all appointments (students)';
+$string['simplesscheduler:manage'] = 'Manage your slots and appointments';
+$string['simplesscheduler:manageallappointments'] = 'Manage all simplesscheduler data';
+$string['simplesscheduler:seeotherstudentsbooking'] = 'See other student booking on the slot';
+$string['simplesscheduler:seeotherstudentsresults'] = 'See other slot student\'s result';
 
 /* ***** Interface strings ****** */
 
@@ -101,14 +101,14 @@ $string['empty_slot_no_availability'] = 'None';
 $string['end'] = 'End';
 $string['enddate'] = 'Repeat Time Slot Until';
 $string['endtime'] = 'End time';
-$string['error_onlyoneslot'] = 'The student can only be registered for one slot in this scheduler.';
+$string['error_onlyoneslot'] = 'The student can only be registered for one slot in this simplesscheduler.';
 $string['error_alreadyregistered'] = 'The student is already registered for the slot.';
 $string['error_overlappings'] = 'You are trying to create slots that overlap other slots. Enable "Force when overlap" to create the slots that do not conflict.';
 $string['exclusive'] = 'Exclusive';
 $string['exclusivity'] = 'Exclusivity';
 $string['exclusivitylockedto'] = 'You cannot change the slot mode when scheduling. The current limit of the destination slot will apply. If the slot is new, a default limit of 1 will apply.';
 $string['exclusivityoverload'] = '';
-$string['explaingeneralconfig'] = 'These options can only be setup at site level and will apply to all schedulers of this Moodle installation.';
+$string['explaingeneralconfig'] = 'These options can only be setup at site level and will apply to all simplesschedulers of this Moodle installation.';
 $string['exportinstructions'] = 'You should better save the generated export file on your hard drive before using it.';
 $string['finalgrade'] = 'Final grade';
 $string['firstslotavailable'] = 'First slot will be open on: ';
@@ -119,7 +119,7 @@ $string['forcourses'] = 'Choose students in courses';
 $string['friday'] = 'Friday';
 $string['generalconfig'] = 'General configuration';
 $string['gradingstrategy'] = 'Grading strategy';
-$string['gradingstrategy_help'] = 'In a scheduler where students can have several appointments, select how grades are aggregated. '.
+$string['gradingstrategy_help'] = 'In a simplesscheduler where students can have several appointments, select how grades are aggregated. '.
     'The gradebook can show either <ul><li>the mean grade or</li><li>the maximum grade</li></ul> that the student has achieved.';
 $string['group'] = 'group ';
 $string['groupbreakdown'] = 'By group size';
@@ -129,7 +129,7 @@ $string['groupscheduling_desc'] = 'Allow entire groups to be scheduled at once. 
 $string['groupsession'] = 'Group session';
 $string['groupsize'] = 'Group size';
 $string['guestscantdoanything'] = 'Guests can\'t do anything here.';
-$string['howtoaddstudents'] = 'For adding students to a global scoped scheduler, use the role setting for the module.<br/>You may also use module role definitions to define the attenders of your students.';
+$string['howtoaddstudents'] = 'For adding students to a global scoped simplesscheduler, use the role setting for the module.<br/>You may also use module role definitions to define the attenders of your students.';
 $string['incourse'] = ' in course ';
 $string['introduction'] = 'Introduction';
 $string['invitation'] = 'Invitation';
@@ -168,7 +168,7 @@ $string['noappointments'] = 'No appointments';
 $string['noexistingstudents'] = 'No existing students';
 $string['nogroups'] = 'No group available for scheduling.';
 $string['noresults'] = 'No results. ';
-$string['noschedulers'] = 'There are no schedulers';
+$string['nosimplesschedulers'] = 'There are no simplesschedulers';
 $string['noslots'] = 'There are no appointment slots available.';
 $string['noslotsavailable'] = 'No appointement required, or all the announced appointments are complete.';
 $string['noslotsopennow'] = 'No slots are open right now.';
@@ -194,7 +194,7 @@ $string['remindertext'] = 'This is just a reminder that you have not yet set up 
 $string['remindtitle'] = '{$a}: Appointment reminder';
 $string['remindwhere'] = 'Location of the appointement: ';
 $string['remindwithwhom'] = 'Scheduled appointment with ';
-$string['resetslots'] = 'Delete scheduler slots';
+$string['resetslots'] = 'Delete simplesscheduler slots';
 $string['resetappointments'] = 'Delete appointments and grades';
 $string['return'] = 'Back to course';
 $string['reuse'] = 'Reuse this slot';
@@ -209,10 +209,10 @@ $string['schedule'] = 'Schedule';
 $string['scheduleappointment'] = 'Schedule appointment for {$a}';
 $string['schedulecancelled'] = '{$a} : Your appointment cancelled or moved';
 $string['schedulegroups'] = 'Schedule by group';
-$string['scheduler'] = 'Scheduler';
+$string['simplesscheduler'] = 'Scheduler';
 $string['schedulestudents'] = 'Schedule by student';
 $string['showemailplain'] = 'Show e-mail addresses in plain text';
-$string['showemailplain_desc'] = 'In the teacher\'s view of the scheduler, '.
+$string['showemailplain_desc'] = 'In the teacher\'s view of the simplesscheduler, '.
     'show the e-mail addresses of students needing an appointment in plain text, in addition to mailto: links.';
 $string['seen'] = 'Seen';
 $string['setreused'] = 'Set reusable';
@@ -248,7 +248,7 @@ $string['teacher'] = 'Teacher';
 // NEW!
 $string['teacher_appoint_student_success'] = 'Student successfully appointed to the slot.';
 $string['teacher_appoint_student_already_appointed'] = 'The student was already appointed to the slot.';
-$string['teacher_appoint_student_has_appointment'] = 'The student has another appointment for this scheduler and cannot be appointed.';
+$string['teacher_appoint_student_has_appointment'] = 'The student has another appointment for this simplesscheduler and cannot be appointed.';
 $string['teacher_revoke_appointment_success'] = 'The appointment was successfully revoked.';
 $string['teacher_revoke_appointment_already_revoked'] = 'The appointment had already been revoked.';
 
@@ -261,7 +261,7 @@ $string['updategrades'] = 'Update grades';
 $string['updatesingleslot'] = '';
 $string['updatingappointment'] = 'Updating an appointment';
 $string['wednesday'] = 'Wednesday';
-$string['welcomealreadyappointed'] = 'This scheduler only allows you to sign up once and you already have a past appointment.';
+$string['welcomealreadyappointed'] = 'This simplesscheduler only allows you to sign up once and you already have a past appointment.';
 $string['welcomebackstudent'] = 'The bold line in the table below highlights your chosen appointment time. You can change to any other available slot.';
 $string['welcomebackstudentmulti'] = 'Bold lines indicate your chosen appointment times. You may choose any number of slots.';
 $string['welcomenewstudent'] = 'The table below shows available upcoming slots for an appointment. Choose an appointment and click "Save my choice." If you need to make a change later you can revisit this page.';
@@ -330,7 +330,7 @@ $string['location_help']='Specify the scheduled location of the meeting.';
 $string['notifications_help']='When this option is enabled, teachers and students will receive notifications when appointments are applied for or cancelled.';
 
 $string['reuse_help']='
-A <i>reuseable</i> slot will remain in the scheduler even a student or the teacher revokes an appointment. The freed slot is available again for appointing.</p>
+A <i>reuseable</i> slot will remain in the simplesscheduler even a student or the teacher revokes an appointment. The freed slot is available again for appointing.</p>
 
 <p>A <i>volatile</i> slot will be automatically deleted in the above cases if it has to start to close to the current dat (it is considered you may not want to add a constraint so close to "right now"). The guard delay can be set by the instance-scoped configuration parameter "Reuse guard time".
 </p>';
@@ -349,41 +349,41 @@ The label for the role who attends students. This is not necessarily a "teacher"
 // Chosen from student view
 $string['email_applied_subject'] = '{$a->course_short}: New appointment';
 $string['email_applied_plain'] = 'An appointment has been applied for on {$a->date} at {$a->time} by the student ';
-$string['email_applied_plain'] = '{$a->attendee} for the course {$a->course_short} using the scheduler ';
+$string['email_applied_plain'] = '{$a->attendee} for the course {$a->course_short} using the simplesscheduler ';
 $string['email_applied_plain'] = 'titled {$a->module} on the website {$a->site}.';
 $string['email_applied_html'] = '<p>An appointment has been applied for on <strong>{$a->date} at {$a->time}</strong> by the student ' ;
-$string['email_applied_html'] = '<a href="{$a->attendee_url}">{$a->attendee}</a> for the course <a href="{$a->course_url}">{$a->course_short}</a> using the scheduler ';
+$string['email_applied_html'] = '<a href="{$a->attendee_url}">{$a->attendee}</a> for the course <a href="{$a->course_url}">{$a->course_short}</a> using the simplesscheduler ';
 $string['email_applied_html'] = 'titled "<em>{$a->module}</em>" on the website <a href="{$a->site_url}">{$a->site}</a>.</p>';
 
 // Assigned from teacher view
 $string['email_assigned_subject'] = '{$a->course_short}: New appointment';
 $string['email_assigned_plain'] = 'An appointment for {$a->date} at {$a->time} has been assigned by the {$a->staffrole} ';
 $string['email_assigned_plain'] .= '{$a->attendee} for the course {$a->course_short} ';
-$string['email_assigned_plain'] .= 'using the scheduler titled ';
+$string['email_assigned_plain'] .= 'using the simplesscheduler titled ';
 $string['email_assigned_plain'] .= '{$a->module} on the website {$a->site}.';
 $string['email_assigned_html'] = '<p>An appointment for <strong>{$a->date} at {$a->time}</strong> has been assigned by the {$a->staffrole} ';
 $string['email_assigned_html'] .= '<a href="{$a->attendee_url}">{$a->attendant}</a> for the course ';
-$string['email_assigned_html'] .= '<a href="{$a->course_url}">{$a->course_short}</a> using the scheduler titled ';
+$string['email_assigned_html'] .= '<a href="{$a->course_url}">{$a->course_short}</a> using the simplesscheduler titled ';
 $string['email_assigned_html'] .= '"<em>{$a->module}</em>" on the website <a href="{$a->site_url}">{$a->site}</a>.</p>';
 
 // Student changed or cancelled appointment
 $string['email_cancelled_subject'] = '{$a->course_short}: Appointment cancelled or moved by a student';
 $string['email_cancelled_plain'] = 'Your appointment on  {$a->date} at {$a->time}, with the student {$a->attendee} ';
-$string['email_cancelled_plain'] .= 'for course {$a->course_short} in the scheduler titled ';
+$string['email_cancelled_plain'] .= 'for course {$a->course_short} in the simplesscheduler titled ';
 $string['email_cancelled_plain'] .= '"{$a->module}" on the website {$a->site} has been cancelled or moved.';
 $string['email_cancelled_html'] = '<p>Your appointment on <strong>{$a->date}</strong> at <strong>{$a->time}</strong> with the student ';
 $string['email_cancelled_html'] .= '<strong><a href="{$a->attendee_url}">{$a->attendee}</a></strong> for course ';
-$string['email_cancelled_html'] .= '<strong><a href="{$a->course_url}">{$a->course_short}</a></strong> in the scheduler titled ';
+$string['email_cancelled_html'] .= '<strong><a href="{$a->course_url}">{$a->course_short}</a></strong> in the simplesscheduler titled ';
 $string['email_cancelled_html'] .= '"<em>{$a->module}</em>" on the website <strong><a href="{$a->site_url}">{$a->site}</a></strong> ';
 $string['email_cancelled_html'] .= '<strong><span style="color: red">has been cancelled or moved</span></strong>.</p>';
 
 // Teacher cancelled appointment
 $string['email_teachercancelled_subject'] = '{$a->course_short}: Appointment cancelled by the {$a->staffrole}';
 $string['email_teachercancelled_plain'] = 'Your appointment on  {$a->date} at {$a->time}, with the {$a->staffrole} {$a->attendant} ';
-$string['email_teachercancelled_plain'] .= 'for course {$a->course_short} in the scheduler titled ';
+$string['email_teachercancelled_plain'] .= 'for course {$a->course_short} in the simplesscheduler titled ';
 $string['email_teachercancelled_plain'] .= '"{$a->module}" on the website {$a->site} has been cancelled. Please apply for a new slot.';
 $string['email_teachercancelled_html'] = '<p>Your appointment on <strong>{$a->date}</strong> at <strong>{$a->time}</strong> with the {$a->staffrole} {$a->attendant} ';
-$string['email_teachercancelled_html'] .= 'for course <strong><a href="{$a->course_url}">{$a->course_short}</a></strong> in the scheduler titled ';
+$string['email_teachercancelled_html'] .= 'for course <strong><a href="{$a->course_url}">{$a->course_short}</a></strong> in the simplesscheduler titled ';
 $string['email_teachercancelled_html'] .= '"<em>{$a->module}</em>" on the website <strong><a href="{$a->site_url}">{$a->site}</a></strong> ';
 $string['email_teachercancelled_html'] .= '<strong><span style="color: red">has been cancelled</span></strong>. Please apply for a new slot.</p>';
 

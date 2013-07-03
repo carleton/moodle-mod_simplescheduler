@@ -4,8 +4,8 @@
  * Library with functions that are intended for local customizations.
  * 
  * @package    mod
- * @subpackage scheduler
- * @copyright  2011 Henning Bostelmann and others (see README.txt)
+ * @subpackage simplesscheduler
+ * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die();
  * @param stdClass $user the user record; may be null 
  * @return array an array of field objects
  */
-function scheduler_get_user_fields($user) {
+function simplesscheduler_get_user_fields($user) {
 	
 	$fields = array();
 

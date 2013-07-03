@@ -4,8 +4,8 @@
  * Controller for all teacher-related views.
  * 
  * @package    mod
- * @subpackage scheduler
- * @copyright  2011 Henning Bostelmann and others (see README.txt)
+ * @subpackage simplesscheduler
+ * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  * @todo review to make sure capabilities are checked as appropriate
@@ -41,21 +41,21 @@ switch ($action) {
             // Avoid slots starting in the past (too far)
             if ($data->starttime < (time() - DAYSECS * 10)) {
                 $erroritem = new stdClass();
-                $erroritem->message = get_string('startpast', 'scheduler');
+                $erroritem->message = get_string('startpast', 'simplesscheduler');
                 $erroritem->on = 'rangestart';
                 $errors[] = $erroritem;
             }
             
             if ($data->exclusivity > 0 and count($appointments) > $data->exclusivity){
                 $erroritem = new stdClass();
-                $erroritem->message = get_string('exclusivityoverload', 'scheduler');
+                $erroritem->message = get_string('exclusivityoverload', 'simplesscheduler');
                 $erroritem->on = 'exclusivity';
                 $errors[] = $erroritem;
             }
             
             if ($data->teacherid == 0){
                 $erroritem = new stdClass();
-                $erroritem->message = get_string('noteacherforslot', 'scheduler');
+                $erroritem->message = get_string('noteacherforslot', 'simplesscheduler');
                 $erroritem->on = 'teacherid';
                 $errors[] = $erroritem;
             }
@@ -66,10 +66,10 @@ switch ($action) {
             }
             
             // Avoid overlapping slots, by asking the user if they'd like to overwrite the existing ones...
-            // for other scheduler, we check independently of exclusivity. Any slot here conflicts
-            // for this scheduler, we check against exclusivity. Any complete slot here conflicts
-            $conflictsRemote = scheduler_get_conflicts($scheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_OTHERS, false);
-            $conflictsLocal = scheduler_get_conflicts($scheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_SELF, true);
+            // for other simplesscheduler, we check independently of exclusivity. Any slot here conflicts
+            // for this simplesscheduler, we check against exclusivity. Any complete slot here conflicts
+            $conflictsRemote = simplesscheduler_get_conflicts($simplesscheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_OTHERS, false);
+            $conflictsLocal = simplesscheduler_get_conflicts($simplesscheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_SELF, true);
             if (!$conflictsRemote) $conflictsRemote = array();
             if (!$conflictsLocal) $conflictsLocal = array();
             $conflicts = $conflictsRemote + $conflictsLocal;
@@ -83,18 +83,18 @@ switch ($action) {
                 if ($subaction == 'confirmdelete' && confirm_sesskey()) {
                     foreach ($conflicts as $conflict) {
                         if ($conflict->id != @$slotid) {
-                            $DB->delete_records('scheduler_slots', array('id' => $conflict->id));
-                            $DB->delete_records('scheduler_appointment', array('slotid' => $conflict->id));
-                            scheduler_delete_calendar_events($conflict);
+                            $DB->delete_records('simplesscheduler_slots', array('id' => $conflict->id));
+                            $DB->delete_records('simplesscheduler_appointment', array('slotid' => $conflict->id));
+                            simplesscheduler_delete_calendar_events($conflict);
                         }
                     }
                 } 
                 else { 
                     echo "<br/><br/>";
                     echo $OUTPUT->box_start('center', '', '');
-                    echo get_string('slotwarning', 'scheduler').'<br/><br/>';
+                    echo get_string('slotwarning', 'simplesscheduler').'<br/><br/>';
                     foreach ($conflicts as $conflict) {
-                        $students = scheduler_get_appointed($conflict->id);
+                        $students = simplesscheduler_get_appointed($conflict->id);
                         
                         echo (!empty($students)) ? '<b>' : '' ;
                         echo userdate($conflict->starttime);
@@ -142,7 +142,7 @@ switch ($action) {
                     $options['appointments'] = serialize($appointments);
                     $options['notes'] = $data->notes;
                     $options['appointmentlocation'] = $data->appointmentlocation;
-                    echo $OUTPUT->single_button(new moodle_url('view.php',$options), get_string('deletetheseslots', 'scheduler'));
+                    echo $OUTPUT->single_button(new moodle_url('view.php',$options), get_string('deletetheseslots', 'simplesscheduler'));
                     echo $OUTPUT->box_end(); 
                     echo $OUTPUT->footer($course);
                     die();  
@@ -153,14 +153,14 @@ switch ($action) {
         
         // make new slot record
         $slot = new stdClass();
-        $slot->schedulerid = $scheduler->id;
+        $slot->simplesschedulerid = $simplesscheduler->id;
         $slot->starttime = $data->starttime;
         $slot->duration = $data->duration;
         if (!empty($data->slotid)){
-            $appointed = count(scheduler_get_appointments($data->slotid));
+            $appointed = count(simplesscheduler_get_appointments($data->slotid));
             if ($data->exclusivity > 0 and $appointed > $data->exclusivity){
                 unset($erroritem);
-                $erroritem->message = get_string('exclusivityoverload', 'scheduler');
+                $erroritem->message = get_string('exclusivityoverload', 'simplesscheduler');
                 $erroritem->on = 'exclusivity';
                 $errors[] = $erroritem;
                 return;
@@ -177,25 +177,25 @@ switch ($action) {
         $slot->hideuntil = $data->hideuntil;
         $slot->emaildate = 0;
         if (!$slotid){ // add it
-            $slot->id = $DB->insert_record('scheduler_slots', $slot);
-            echo $OUTPUT->heading(get_string('oneslotadded','scheduler'));
+            $slot->id = $DB->insert_record('simplesscheduler_slots', $slot);
+            echo $OUTPUT->heading(get_string('oneslotadded','simplesscheduler'));
         }
         else{ // update it
             $slot->id = $slotid;
-            $DB->update_record('scheduler_slots', $slot);
-            echo $OUTPUT->heading(get_string('slotupdated','scheduler'));
+            $DB->update_record('simplesscheduler_slots', $slot);
+            echo $OUTPUT->heading(get_string('slotupdated','simplesscheduler'));
         }
         
-        $DB->delete_records('scheduler_appointment', array('slotid'=>$slot->id)); // cleanup old appointments
+        $DB->delete_records('simplesscheduler_appointment', array('slotid'=>$slot->id)); // cleanup old appointments
         if($appointments){
             foreach ($appointments as $appointment){ // insert updated
                 $appointment->slotid = $slot->id; // now we know !!
                 $appointment->attended = 0;
-                $DB->insert_record('scheduler_appointment', $appointment);
+                $DB->insert_record('simplesscheduler_appointment', $appointment);
             }
         }
         
-        scheduler_events_update($slot, $course);
+        simplesscheduler_events_update($slot, $course);
         break;
     }
     /************************************ Saving a session with slots *************************************/
@@ -209,14 +209,14 @@ switch ($action) {
         
         /// range is negative
         if ($fordays < 0){
-            $erroritem->message = get_string('negativerange', 'scheduler');
+            $erroritem->message = get_string('negativerange', 'simplesscheduler');
             $erroritem->on = 'rangeend';
             $errors[] = $erroritem;
         }
         
         if ($data->teacherid == 0){
             unset($erroritem);
-            $erroritem->message = get_string('noteacherforslot', 'scheduler');
+            $erroritem->message = get_string('noteacherforslot', 'simplesscheduler');
             $erroritem->on = 'teacherid';
             $errors[] = $erroritem;
         }
@@ -224,7 +224,7 @@ switch ($action) {
         /// first slot is in the past
         if ($data->rangestart < time() - DAYSECS) {
             unset($erroritem);
-            $erroritem->message = get_string('startpast', 'scheduler');
+            $erroritem->message = get_string('startpast', 'simplesscheduler');
             $erroritem->on = 'rangestart';
             $errors[] = $erroritem;
         }
@@ -241,7 +241,7 @@ switch ($action) {
         $slot->appointmentlocation = $data->appointmentlocation;
         $slot->exclusivity = $data->exclusivity;
         $slot->duration = $data->duration;
-        $slot->schedulerid = $scheduler->id;
+        $slot->simplesschedulerid = $simplesscheduler->id;
         $slot->timemodified = time();
         $slot->teacherid = $data->teacherid;
         
@@ -261,7 +261,7 @@ switch ($action) {
                     (($dayofweek == 0) && ($data->sunday == 1))){
                 $noslotsallowed = false;
                 $data->starttime = make_timestamp($eventdate['year'], $eventdate['mon'], $eventdate['mday'], $data->starthour, $data->startminute);
-                $conflicts = scheduler_get_conflicts($scheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
+                $conflicts = simplesscheduler_get_conflicts($simplesscheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
                 if (!$data->forcewhenoverlap && $conflicts) {
                     $hasconflict = true;
                 }
@@ -270,7 +270,7 @@ switch ($action) {
         
         if (isset($hasconflict))
         {
-        	$erroritem->message = get_string('error_overlappings', 'scheduler');
+        	$erroritem->message = get_string('error_overlappings', 'simplesscheduler');
             $erroritem->on = 'range';
             $errors[] = $erroritem;
         }
@@ -278,7 +278,7 @@ switch ($action) {
         /// Finally check if some slots are allowed (an error is thrown to ask care to this situation)
         if ($noslotsallowed){
             unset($erroritem);
-            $erroritem->message = get_string('allslotsincloseddays', 'scheduler');
+            $erroritem->message = get_string('allslotsincloseddays', 'simplesscheduler');
             $erroritem->on = 'days';
             $errors[] = $erroritem;
         }
@@ -325,10 +325,10 @@ switch ($action) {
                     $slot->emaildate = make_timestamp($eventdate['year'], $eventdate['mon'], $eventdate['mday'], 0, 0) - $data->emailfrom;
                 }
             	while ($slot->starttime <= $data->timeend - $data->duration * 60) {
-                    $conflicts = scheduler_get_conflicts($scheduler->id, $data->timestart, $data->timestart + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
+                    $conflicts = simplesscheduler_get_conflicts($simplesscheduler->id, $data->timestart, $data->timestart + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
                     if ($conflicts) {
                         if (!$data->forcewhenoverlap){
-                            print_string('conflictingslots', 'scheduler');
+                            print_string('conflictingslots', 'simplesscheduler');
                             echo '<ul>';
                             foreach ($conflicts as $aConflict){
                                 $sql = "
@@ -338,26 +338,26 @@ switch ($action) {
                                     sl.starttime
                                     FROM
                                     {course} c,
-                                    {scheduler} s,
-                                    {scheduler_slots} sl
+                                    {simplesscheduler} s,
+                                    {simplesscheduler_slots} sl
                                     WHERE
                                     s.course = c.id AND
-                                    sl.schedulerid = s.id AND
+                                    sl.simplesschedulerid = s.id AND
                                     sl.id = {$aConflict->id}
                                     ";
                                 $conflictinfo = $DB->get_record_sql($sql);
-                                echo '<li> ' . userdate($conflictinfo->starttime) . ' ' . usertime($conflictinfo->starttime) . ' ' . get_string('incourse', 'scheduler') . ': ' . $conflictinfo->shortname . ' - ' . $conflictinfo->fullname . "</li>\n";
+                                echo '<li> ' . userdate($conflictinfo->starttime) . ' ' . usertime($conflictinfo->starttime) . ' ' . get_string('incourse', 'simplesscheduler') . ': ' . $conflictinfo->shortname . ' - ' . $conflictinfo->fullname . "</li>\n";
                             }
                             echo '</ul><br/>';
                         }
                         else{ // we force, so delete all conflicting before inserting
                             foreach($conflicts as $conflict){
-                                scheduler_delete_slot($conflict->id);
+                                simplesscheduler_delete_slot($conflict->id);
                             }
                         }
                     } 
                     else {
-                        $DB->insert_record('scheduler_slots', $slot, false);
+                        $DB->insert_record('simplesscheduler_slots', $slot, false);
                         $countslots++;
                     }
                     $slot->starttime += $data->duration * 60;
@@ -365,13 +365,13 @@ switch ($action) {
                 }
             }
         }
-        echo $OUTPUT->heading(get_string('slotsadded', 'scheduler', $countslots));
+        echo $OUTPUT->heading(get_string('slotsadded', 'simplesscheduler', $countslots));
         break;
     }
     /************************************ Deleting a slot ***********************************************/
     case 'deleteslot': {
         $slotid = required_param('slotid', PARAM_INT);
-        scheduler_delete_slot($slotid, $scheduler);
+        simplesscheduler_delete_slot($slotid, $simplesscheduler);
         break;
     }
     /************************************ Deleting multiple slots ***********************************************/
@@ -379,7 +379,7 @@ switch ($action) {
         $slotids = required_param('items', PARAM_RAW);
         $slots = explode(",", $slotids);
         foreach($slots as $aSlotId){
-            scheduler_delete_slot($aSlotId, $scheduler);
+            simplesscheduler_delete_slot($aSlotId, $simplesscheduler);
         }
         break;
     }
@@ -390,8 +390,8 @@ switch ($action) {
         $slotid = required_param('slotid', PARAM_INT);
         $studentid = required_param('studentid', PARAM_INT);
         if (!empty($slotid) && !empty($studentid)) {
-        	$result = scheduler_teacher_revoke_appointment($slotid, $studentid);
-        	notify(get_string($result, 'scheduler'));
+        	$result = simplesscheduler_teacher_revoke_appointment($slotid, $studentid);
+        	notify(get_string($result, 'simplesscheduler'));
         }
         break;
     }
@@ -402,7 +402,7 @@ switch ($action) {
         $slot = new stdClass();
         $slot->id = $slotid;
         $slot->exclusivity = 0;
-        $DB->update_record('scheduler_slots', $slot);
+        $DB->update_record('simplesscheduler_slots', $slot);
         break;
     }
     
@@ -412,16 +412,16 @@ switch ($action) {
         $slot = new stdClass();
         $slot->id = $slotid;
         $slot->exclusivity = 1;
-        $DB->update_record('scheduler_slots', $slot);
+        $DB->update_record('simplesscheduler_slots', $slot);
         break;
     }
     
     /************************************ Deleting all slots ***************************************************/
     case 'deleteall':{
-     	if (has_capability('mod/scheduler:manageallappointments', $context)){
-			if ($slots = $DB->get_records('scheduler_slots', array('schedulerid' => $cm->instance))){
+     	if (has_capability('mod/simplesscheduler:manageallappointments', $context)){
+			if ($slots = $DB->get_records('simplesscheduler_slots', array('simplesschedulerid' => $cm->instance))){
 				foreach($slots as $aSlot){
-					scheduler_delete_slot($aSlot->id, $scheduler);
+					simplesscheduler_delete_slot($aSlot->id, $simplesscheduler);
 				}           
 			}
 		}      
@@ -435,24 +435,24 @@ switch ($action) {
     /************************************ Deleting unused slots (all teachers) ************************************/
     case 'deleteallunused': {
         if (!isset($teacherClause)) $teacherClause = '';
-        if (has_capability('mod/scheduler:manageallappointments', $context)){
+        if (has_capability('mod/simplesscheduler:manageallappointments', $context)){
             $sql = "
                 SELECT
                 s.id,
-                s.schedulerid
+                s.simplesschedulerid
                 FROM
-                {scheduler_slots} s
+                {simplesscheduler_slots} s
                 LEFT JOIN
-                {scheduler_appointment} a
+                {simplesscheduler_appointment} a
                 ON
                 s.id = a.slotid
                 WHERE
-                s.schedulerid = ? AND a.studentid IS NULL
+                s.simplesschedulerid = ? AND a.studentid IS NULL
                 {$teacherClause}
                 ";
-            if ($unappointed = $DB->get_records_sql($sql, array($scheduler->id))) {
+            if ($unappointed = $DB->get_records_sql($sql, array($simplesscheduler->id))) {
             	foreach ($unappointed as $aSlot) {
-            		scheduler_delete_slot($aSlot->id, $scheduler);
+            		simplesscheduler_delete_slot($aSlot->id, $simplesscheduler);
             	}
             }
         }
@@ -460,9 +460,9 @@ switch ($action) {
     }
     /************************************ Deleting current teacher's slots ***************************************/
     case 'deleteonlymine': {
-        if ($slots = $DB->get_records_select('scheduler_slots', "schedulerid = {$cm->instance} AND teacherid = {$USER->id}", null, '', 'id')) {
+        if ($slots = $DB->get_records_select('simplesscheduler_slots', "simplesschedulerid = {$cm->instance} AND teacherid = {$USER->id}", null, '', 'id')) {
             foreach($slots as $aSlot) {
-            	scheduler_delete_slot($aSlot->id, $scheduler);
+            	simplesscheduler_delete_slot($aSlot->id, $simplesscheduler);
             }
         }
         break;
@@ -475,8 +475,8 @@ switch ($action) {
         
         if (!empty($studentid) && !empty($slotid))
         {
-        	$result = scheduler_teacher_appoint_student($slotid, $studentid);
-        	notify(get_string($result, 'scheduler'));
+        	$result = simplesscheduler_teacher_appoint_student($slotid, $studentid);
+        	notify(get_string($result, 'simplesscheduler'));
         	break;
         }
     }

@@ -1,19 +1,19 @@
 <?PHP 
 
 /**
- * Library (public API) of the scheduler module
+ * Library (public API) of the simplesscheduler module
  * 
  * @package    mod
- * @subpackage scheduler
- * @copyright  2011 Henning Bostelmann and others (see README.txt)
+ * @subpackage simplesscheduler
+ * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-/// Library of functions and constants for module scheduler
-include_once $CFG->dirroot.'/mod/scheduler/locallib.php';
-include_once $CFG->dirroot.'/mod/scheduler/mailtemplatelib.php';
+/// Library of functions and constants for module simplesscheduler
+include_once $CFG->dirroot.'/mod/simplesscheduler/locallib.php';
+include_once $CFG->dirroot.'/mod/simplesscheduler/mailtemplatelib.php';
 
 define('SCHEDULER_SELF', 0); // Used for setting conflict search scope 
 define('SCHEDULER_OTHERS', 1); // Used for setting conflict search scope 
@@ -23,15 +23,15 @@ define('SCHEDULER_ALL', 2); // Used for setting conflict search scope
  * Given an object containing all the necessary data,
  * will create a new instance and return the id number
  * of the new instance.
- * @param object $scheduler the current instance
+ * @param object $simplesscheduler the current instance
  * @return int the new instance id
  * @uses $DB
  */
-function scheduler_add_instance($scheduler) {
+function simplesscheduler_add_instance($simplesscheduler) {
     global $DB;    
-    $scheduler->timemodified = time();
-    $id = $DB->insert_record('scheduler', $scheduler);
-    $scheduler->id = $id;
+    $simplesscheduler->timemodified = time();
+    $id = $DB->insert_record('simplesscheduler', $simplesscheduler);
+    $simplesscheduler->id = $id;
     return $id;
 }
 
@@ -39,15 +39,15 @@ function scheduler_add_instance($scheduler) {
  * Given an object containing all the necessary data,
  * (defined by the form in mod.html) this function
  * will update an existing instance with new data.
- * @param object $scheduler the current instance
+ * @param object $simplesscheduler the current instance
  * @return object the updated instance
  * @uses $DB
  */
-function scheduler_update_instance($scheduler) {
+function simplesscheduler_update_instance($simplesscheduler) {
     global $DB;
-    $scheduler->timemodified = time();
-    $scheduler->id = $scheduler->instance;    
-    $DB->update_record('scheduler', $scheduler);
+    $simplesscheduler->timemodified = time();
+    $simplesscheduler->id = $simplesscheduler->instance;    
+    $DB->update_record('simplesscheduler', $simplesscheduler);
     return true;
 }
 
@@ -60,17 +60,17 @@ function scheduler_update_instance($scheduler) {
  * @return boolean true if success, false otherwise
  * @uses $DB
  */
-function scheduler_delete_instance($id) {
+function simplesscheduler_delete_instance($id) {
     global $CFG, $DB;
-    if (! $scheduler = $DB->get_record('scheduler', array('id' => $id))) {
+    if (! $simplesscheduler = $DB->get_record('simplesscheduler', array('id' => $id))) {
         return false;
     }
-    $result = $DB->delete_records('scheduler', array('id' => $scheduler->id));
-    $oldslots = $DB->get_records('scheduler_slots', array('schedulerid' => $scheduler->id), '', 'id, id');
+    $result = $DB->delete_records('simplesscheduler', array('id' => $simplesscheduler->id));
+    $oldslots = $DB->get_records('simplesscheduler_slots', array('simplesschedulerid' => $simplesscheduler->id), '', 'id, id');
     if ($oldslots) {
         foreach(array_keys($oldslots) as $slotid){
             // will delete appointments and remaining related events - we suppress notifications here.
-            scheduler_delete_slot($slotid, null);
+            simplesscheduler_delete_slot($slotid, null);
         }
     }
     return $result;
@@ -85,10 +85,10 @@ function scheduler_delete_instance($id) {
  * @param object $course the course instance
  * @param object $user the concerned user instance
  * @param object $mod the current course module instance
- * @param object $scheduler the activity module behind the course module instance
+ * @param object $simplesscheduler the activity module behind the course module instance
  * @return object an information object as defined above
  */
-function scheduler_user_outline($course, $user, $mod, $scheduler) {
+function simplesscheduler_user_outline($course, $user, $mod, $simplesscheduler) {
     $return = NULL;
     return $return;
 }
@@ -99,24 +99,24 @@ function scheduler_user_outline($course, $user, $mod, $scheduler) {
  * @param object $course the course instance
  * @param object $user the concerned user instance
  * @param object $mod the current course module instance
- * @param object $scheduler the activity module behind the course module instance
+ * @param object $simplesscheduler the activity module behind the course module instance
  * @param boolean true if the user completed activity, false otherwise
  */
-function scheduler_user_complete($course, $user, $mod, $scheduler) {
+function simplesscheduler_user_complete($course, $user, $mod, $simplesscheduler) {
     
     return true;
 }
 
 /**
  * Given a course and a time, this module should find recent activity
- * that has occurred in scheduler activities and print it out.
+ * that has occurred in simplesscheduler activities and print it out.
  * Return true if there was output, or false is there was none.
  * @param object $course the course instance
  * @param boolean $isteacher true tells a teacher uses the function
  * @param int $timestart a time start timestamp
  * @return boolean true if anything was printed, otherwise false
  */
-function scheduler_print_recent_activity($course, $isteacher, $timestart) {
+function simplesscheduler_print_recent_activity($course, $isteacher, $timestart) {
     
     return false;
 }
@@ -129,47 +129,47 @@ function scheduler_print_recent_activity($course, $isteacher, $timestart) {
  * @uses $CFG
  * @uses $DB
  */
-function scheduler_cron () {
+function simplesscheduler_cron () {
     global $CFG, $DB;
     
     $date = make_timestamp(date('Y'), date('m'), date('d'), date('H'), date('i'));
     
-    // for every appointment in all schedulers
+    // for every appointment in all simplesschedulers
     $select = 'emaildate > 0 AND emaildate <= ? AND starttime > ?';
-    $slots = $DB->get_records_select('scheduler_slots', $select, array($date, $date), 'starttime');
+    $slots = $DB->get_records_select('simplesscheduler_slots', $select, array($date, $date), 'starttime');
     
     foreach ($slots as $slot) {
         // get teacher
         $teacher = $DB->get_record('user', array('id' => $slot->teacherid));
         
         // get course
-        $scheduler = $DB->get_record('scheduler', array('id'=>$slot->schedulerid));
-        $course = $DB->get_record('course', array('id'=>$scheduler->course));
+        $simplesscheduler = $DB->get_record('simplesscheduler', array('id'=>$slot->simplesschedulerid));
+        $course = $DB->get_record('course', array('id'=>$simplesscheduler->course));
         
         // get appointed student list
-        $appointments = $DB->get_records('scheduler_appointment', array('slotid'=>$slot->id), '', 'id, studentid');
+        $appointments = $DB->get_records('simplesscheduler_appointment', array('slotid'=>$slot->id), '', 'id, studentid');
         
         //if no email previously sent and one is required
         foreach ($appointments as $appointment) {
             $student = $DB->get_record('user', array('id'=>$appointment->studentid));
-            $vars = scheduler_get_mail_variables ($scheduler, $slot, $teacher, $student);
-            scheduler_send_email_from_template ($student, $teacher, $course, 'remindtitle', 'reminder', $vars, 'scheduler');                
+            $vars = simplesscheduler_get_mail_variables ($simplesscheduler, $slot, $teacher, $student);
+            simplesscheduler_send_email_from_template ($student, $teacher, $course, 'remindtitle', 'reminder', $vars, 'simplesscheduler');                
         }
         // mark as sent
         $slot->emaildate = -1;
-        $DB->update_record('scheduler_slots', $slot);
+        $DB->update_record('simplesscheduler_slots', $slot);
     }
     return true;
 }
 
 /**
- * Returns the users with data in one scheduler
+ * Returns the users with data in one simplesscheduler
  * (users with records in journal_entries, students and teachers)
- * @param int $schedulerid the id of the activity module
+ * @param int $simplesschedulerid the id of the activity module
  * @uses $CFG
  * @uses $DB
  */
-function scheduler_get_participants($schedulerid) {
+function simplesscheduler_get_participants($simplesschedulerid) {
     global $CFG, $DB;
     
     //Get students using slots they have
@@ -178,14 +178,14 @@ function scheduler_get_participants($schedulerid) {
         u.*
         FROM
         {user} u,
-        {scheduler_slots} s,
-        {scheduler_appointment} a
+        {simplesscheduler_slots} s,
+        {simplesscheduler_appointment} a
         WHERE
-        s.schedulerid = ? AND
+        s.simplesschedulerid = ? AND
         s.id = a.slotid AND
         u.id = a.studentid
         ';
-    $students = $DB->get_records_sql($sql, array($schedulerid));
+    $students = $DB->get_records_sql($sql, array($simplesschedulerid));
     
     //Get teachers using slots they have
     $sql = '
@@ -193,12 +193,12 @@ function scheduler_get_participants($schedulerid) {
         u.*
         FROM
         {user} u,
-        {scheduler_slots} s
+        {simplesscheduler_slots} s
         WHERE
-        s.schedulerid = ? AND
+        s.simplesschedulerid = ? AND
         u.id = s.teacherid
         ';
-    $teachers = $DB->get_records_sql($sql, array($schedulerid));
+    $teachers = $DB->get_records_sql($sql, array($simplesschedulerid));
     
     if ($students and $teachers){
         $participants = array_merge(array_values($students), array_values($teachers));
@@ -226,24 +226,24 @@ function scheduler_get_participants($schedulerid) {
  * Called by course/reset.php
  * @param $mform form passed by reference
  */
-function scheduler_reset_course_form_definition(&$mform) {
+function simplesscheduler_reset_course_form_definition(&$mform) {
     global $COURSE, $DB;
     
-    $mform->addElement('header', 'schedulerheader', get_string('modulenameplural', 'scheduler'));
+    $mform->addElement('header', 'simplesschedulerheader', get_string('modulenameplural', 'simplesscheduler'));
     
-    if($DB->record_exists('scheduler', array('course'=>$COURSE->id))){
+    if($DB->record_exists('simplesscheduler', array('course'=>$COURSE->id))){
         
-        $mform->addElement('checkbox', 'reset_scheduler_slots', get_string('resetslots', 'scheduler'));
-        $mform->addElement('checkbox', 'reset_scheduler_appointments', get_string('resetappointments', 'scheduler'));
-        $mform->disabledIf('reset_scheduler_appointments', 'reset_scheduler_slots', 'checked');
+        $mform->addElement('checkbox', 'reset_simplesscheduler_slots', get_string('resetslots', 'simplesscheduler'));
+        $mform->addElement('checkbox', 'reset_simplesscheduler_appointments', get_string('resetappointments', 'simplesscheduler'));
+        $mform->disabledIf('reset_simplesscheduler_appointments', 'reset_simplesscheduler_slots', 'checked');
     }
 }
 
 /**
  * Default values for the reset form
  */
-function scheduler_reset_course_form_defaults($course) {
-    return array('reset_scheduler_slots'=>1, 'reset_scheduler_appointments'=>1);
+function simplesscheduler_reset_course_form_defaults($course) {
+    return array('reset_simplesscheduler_slots'=>1, 'reset_simplesscheduler_appointments'=>1);
 }
 
 
@@ -254,14 +254,14 @@ function scheduler_reset_course_form_defaults($course) {
  * @param data the reset options
  * @return void
  */
-function scheduler_reset_userdata($data) {
+function simplesscheduler_reset_userdata($data) {
     global $CFG, $DB;
     
     $status = array();
-    $componentstr = get_string('modulenameplural', 'scheduler');
+    $componentstr = get_string('modulenameplural', 'simplesscheduler');
     
-    $sqlfromslots = 'FROM {scheduler_slots} WHERE schedulerid IN '.
-        '(SELECT sc.id FROM {scheduler} sc '.
+    $sqlfromslots = 'FROM {simplesscheduler_slots} WHERE simplesschedulerid IN '.
+        '(SELECT sc.id FROM {simplesscheduler} sc '.
         ' WHERE sc.course = :course)';
     
     $params = array('course'=>$data->courseid);
@@ -269,23 +269,23 @@ function scheduler_reset_userdata($data) {
     $strreset = get_string('reset');
     
     
-    if (!empty($data->reset_scheduler_appointments) || !empty($data->reset_scheduler_slots)) {
+    if (!empty($data->reset_simplesscheduler_appointments) || !empty($data->reset_simplesscheduler_slots)) {
         
         $slots = $DB->get_recordset_sql('SELECT * '.$sqlfromslots, $params);
         $success = true;
         foreach ($slots as $slot) { 
             // delete calendar events
-            $success = $success && scheduler_delete_calendar_events($slot);
+            $success = $success && simplesscheduler_delete_calendar_events($slot);
             
             // delete appointments
-            $success = $success && $DB->delete_records('scheduler_appointment', array('slotid'=>$slot->id));			    		    	
+            $success = $success && $DB->delete_records('simplesscheduler_appointment', array('slotid'=>$slot->id));			    		    	
         }
         $slots->close();
-        $status[] = array('component' => $componentstr, 'item' => get_string('resetappointments','scheduler'), 'error' => !$success);
+        $status[] = array('component' => $componentstr, 'item' => get_string('resetappointments','simplesscheduler'), 'error' => !$success);
     }
-    if (!empty($data->reset_scheduler_slots)) {
+    if (!empty($data->reset_simplesscheduler_slots)) {
         if ($DB->execute('DELETE '.$sqlfromslots, $params)) {
-            $status[] = array('component' => $componentstr, 'item' => get_string('resetslots','scheduler'), 'error' => false);
+            $status[] = array('component' => $componentstr, 'item' => get_string('resetslots','simplesscheduler'), 'error' => false);
         }
     }
     return $status;
@@ -295,7 +295,7 @@ function scheduler_reset_userdata($data) {
  * @param string $feature FEATURE_xx constant for requested feature
  * @return mixed True if module supports feature, null if doesn't know
  */
-function scheduler_supports($feature) {
+function simplesscheduler_supports($feature) {
     switch($feature) {
         case FEATURE_GROUPS:                  return true;
         case FEATURE_GROUPINGS:               return true;

@@ -4,8 +4,8 @@
  * E-mail formatting from templates.
  * 
  * @package    mod
- * @subpackage scheduler
- * @copyright  2011 Henning Bostelmann and others (see README.txt)
+ * @subpackage simplesscheduler
+ * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -22,7 +22,7 @@ defined('MOODLE_INTERNAL') || die();
 * @param infomap a hash containing pairs of parm => data to replace in template
 * @return a fully resolved template where all data has been injected
 */
-function scheduler_compile_mail_template($template, $format, $infomap, $module = 'scheduler') {
+function simplesscheduler_compile_mail_template($template, $format, $infomap, $module = 'simplesscheduler') {
 	$params = array();
 	foreach ($infomap as $key=>$value) {
 	    $params[strtolower($key)] = $value;
@@ -51,7 +51,7 @@ function scheduler_compile_mail_template($template, $format, $infomap, $module =
  * @return bool|string Returns "true" if mail was sent OK, "emailstop" if email
  *         was blocked by user and "false" if there was another sort of error.
  */
-function scheduler_send_email_from_template($recipient, $sender, $course, $title, $template, $infomap, $modulename , $lang = '') {
+function simplesscheduler_send_email_from_template($recipient, $sender, $course, $title, $template, $infomap, $modulename , $lang = '') {
     
     global $CFG;
     global $SITE;
@@ -75,9 +75,9 @@ function scheduler_send_email_from_template($recipient, $sender, $course, $title
     
     $vars = array_merge($defaultvars,$infomap);
     
-    $subject = scheduler_compile_mail_template($template, 'subject', $vars, $modulename);    
-    $plainMail = scheduler_compile_mail_template($template, 'plain', $vars, $modulename);
-    $htmlMail = scheduler_compile_mail_template($template, 'html', $vars, $modulename);
+    $subject = simplesscheduler_compile_mail_template($template, 'subject', $vars, $modulename);    
+    $plainMail = simplesscheduler_compile_mail_template($template, 'plain', $vars, $modulename);
+    $htmlMail = simplesscheduler_compile_mail_template($template, 'html', $vars, $modulename);
     
     $res = email_to_user ($recipient, $sender, $subject, $plainMail, $htmlMail); 
     return $res;

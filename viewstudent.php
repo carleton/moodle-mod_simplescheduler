@@ -4,15 +4,15 @@
  * Prints the screen that displays a single student to a teacher.
  * 
  * @package    mod
- * @subpackage scheduler
- * @copyright  2011 Henning Bostelmann and others (see README.txt)
+ * @subpackage simplesscheduler
+ * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  * @todo eliminate save comment javascript method in place of a save button at the bottom.
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once $CFG->dirroot.'/mod/scheduler/locallib.php';
+require_once $CFG->dirroot.'/mod/simplesscheduler/locallib.php';
 
 
 $studentid = required_param('studentid', PARAM_INT);
@@ -24,23 +24,23 @@ if (!in_array($order,array('ASC','DESC'))) {
 $usehtmleditor = can_use_html_editor();
 
 if ($subaction != ''){
-    include $CFG->dirroot.'/mod/scheduler/viewstudent.controller.php'; 
+    include $CFG->dirroot.'/mod/simplesscheduler/viewstudent.controller.php'; 
 }
  
-scheduler_print_user($DB->get_record('user', array('id' => $studentid)), $course);
+simplesscheduler_print_user($DB->get_record('user', array('id' => $studentid)), $course);
 
 //print tabs
 $tabrows = array();
 $row  = array();
 if($page == 'appointments'){
-    $currenttab = get_string('appointments', 'scheduler');
+    $currenttab = get_string('appointments', 'simplesscheduler');
 } else {
-    $currenttab = get_string('notes', 'scheduler');
+    $currenttab = get_string('notes', 'simplesscheduler');
 }
-$tabname = get_string('appointments', 'scheduler');
-$row[] = new tabobject($tabname, "view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$studentid}&amp;course={$scheduler->course}&amp;order={$order}&amp;page=appointments", $tabname);
-$tabname = get_string('comments', 'scheduler');
-$row[] = new tabobject($tabname, "view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$studentid}&amp;course={$scheduler->course}&amp;order={$order}&amp;page=notes", $tabname);
+$tabname = get_string('appointments', 'simplesscheduler');
+$row[] = new tabobject($tabname, "view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$studentid}&amp;course={$simplesscheduler->course}&amp;order={$order}&amp;page=appointments", $tabname);
+$tabname = get_string('comments', 'simplesscheduler');
+$row[] = new tabobject($tabname, "view.php?what=viewstudent&amp;id={$cm->id}&amp;studentid={$studentid}&amp;course={$simplesscheduler->course}&amp;order={$order}&amp;page=notes", $tabname);
 $tabrows[] = $row;
 print_tabs($tabrows, $currenttab);
 
@@ -54,44 +54,44 @@ $sql = "
     a.appointmentnote,
     a.timemodified as apptimemodified
     FROM
-    {scheduler_slots} s,
-    {scheduler_appointment} a
+    {simplesscheduler_slots} s,
+    {simplesscheduler_appointment} a
     WHERE
     s.id = a.slotid AND
-    schedulerid = ? AND
+    simplesschedulerid = ? AND
     studentid = ?
     ORDER BY
     starttime $order
     ";
-if ($slots = $DB->get_records_sql($sql, array($scheduler->id, $studentid, $order))) {
+if ($slots = $DB->get_records_sql($sql, array($simplesscheduler->id, $studentid, $order))) {
     /// provide link to sort in the opposite direction
     if($order == 'DESC'){
-        $orderlink = "<a href=\"view.php?what=viewstudent&amp;id=$cm->id&amp;studentid=".$studentid."&amp;course=$scheduler->course&amp;order=ASC&amp;page=$page\">";
+        $orderlink = "<a href=\"view.php?what=viewstudent&amp;id=$cm->id&amp;studentid=".$studentid."&amp;course=$simplesscheduler->course&amp;order=ASC&amp;page=$page\">";
     } else {
-        $orderlink = "<a href=\"view.php?what=viewstudent&amp;id=$cm->id&amp;studentid=".$studentid."&amp;course=$scheduler->course&amp;order=DESC&amp;page=$page\">";
+        $orderlink = "<a href=\"view.php?what=viewstudent&amp;id=$cm->id&amp;studentid=".$studentid."&amp;course=$simplesscheduler->course&amp;order=DESC&amp;page=$page\">";
     }
     
     $table = new html_table();
     /// print page header and prepare table headers
     if ($page == 'appointments'){
-        echo $OUTPUT->heading(get_string('slots' ,'scheduler'));
-        $table->head  = array ($strdate, $strstart, $strend, $strnote, s(scheduler_get_teacher_name($scheduler)));
+        echo $OUTPUT->heading(get_string('slots' ,'simplesscheduler'));
+        $table->head  = array ($strdate, $strstart, $strend, $strnote, s(simplesscheduler_get_teacher_name($simplesscheduler)));
         $table->align = array ('LEFT', 'LEFT', 'LEFT', 'LEFT', 'LEFT');
         $table->width = '80%';
     } else {
-        echo $OUTPUT->heading(get_string('comments' ,'scheduler'));
-        $table->head  = array (get_string('studentcomments', 'scheduler'), get_string('comments', 'scheduler'), $straction);
+        echo $OUTPUT->heading(get_string('comments' ,'simplesscheduler'));
+        $table->head  = array (get_string('studentcomments', 'simplesscheduler'), get_string('comments', 'simplesscheduler'), $straction);
         $table->align = array ('LEFT', 'LEFT');
         $table->width = '80%';
     }
     foreach($slots as $slot) {
-        $startdate = scheduler_userdate($slot->starttime,1);
-        $starttime = scheduler_usertime($slot->starttime,1);
-        $endtime = scheduler_usertime($slot->starttime + ($slot->duration * 60),1);
+        $startdate = simplesscheduler_userdate($slot->starttime,1);
+        $starttime = simplesscheduler_usertime($slot->starttime,1);
+        $endtime = simplesscheduler_usertime($slot->starttime + ($slot->duration * 60),1);
         $distributecheck = '';
         if ($page == 'appointments'){
-            if ($DB->count_records('scheduler_appointment', array('slotid' => $slot->id)) > 1){
-                $distributecheck = "<br/><input type=\"checkbox\" name=\"distribute{$slot->appid}\" value=\"1\" /> ".get_string('distributetoslot', 'scheduler')."\n";
+            if ($DB->count_records('simplesscheduler_appointment', array('slotid' => $slot->id)) > 1){
+                $distributecheck = "<br/><input type=\"checkbox\" name=\"distribute{$slot->appid}\" value=\"1\" /> ".get_string('distributetoslot', 'simplesscheduler')."\n";
             }
             //display appointments
             if ($slot->attended == 0){
@@ -104,11 +104,11 @@ if ($slots = $DB->get_records_sql($sql, array($scheduler->id, $studentid, $order
                 $table->data[] = array ($startdate, $starttime, $endtime, $slot->appointmentnote, fullname($teacher));
             }
         } else {
-            if ($DB->count_records('scheduler_appointment', array('slotid' => $slot->id)) > 1){
-                $distributecheck = "<input type=\"checkbox\" name=\"distribute\" value=\"1\" /> ".get_string('distributetoslot', 'scheduler')."\n";
+            if ($DB->count_records('simplesscheduler_appointment', array('slotid' => $slot->id)) > 1){
+                $distributecheck = "<input type=\"checkbox\" name=\"distribute\" value=\"1\" /> ".get_string('distributetoslot', 'simplesscheduler')."\n";
             }
             //display notes
-            $actions = "<a href=\"javascript:document.forms['updatenote{$slot->id}'].submit()\">".get_string('savecomment', 'scheduler').'</a>';
+            $actions = "<a href=\"javascript:document.forms['updatenote{$slot->id}'].submit()\">".get_string('savecomment', 'simplesscheduler').'</a>';
             $commenteditor = "<form name=\"updatenote{$slot->id}\" action=\"view.php\" method=\"post\">\n";
             $commenteditor .= "<input type=\"hidden\" name=\"what\" value=\"viewstudent\" />\n";
             $commenteditor .= "<input type=\"hidden\" name=\"subaction\" value=\"updatenote\" />\n";
@@ -150,7 +150,7 @@ if ($slots = $DB->get_records_sql($sql, array($scheduler->id, $studentid, $order
         echo '</form>';
     }
 }
-echo $OUTPUT->continue_button($CFG->wwwroot.'/mod/scheduler/view.php?id='.$cm->id);
+echo $OUTPUT->continue_button($CFG->wwwroot.'/mod/simplesscheduler/view.php?id='.$cm->id);
 
 return;
 /// Finish the page
