@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Statistics report for the simplesscheduler
+ * Statistics report for the simplescheduler
  * 
  * @package    mod
- * @subpackage simplesscheduler
+ * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,17 +29,17 @@ $tabrows = array();
 $row  = array();
 $currenttab = '';
 foreach ($tabs as $tab) {
-    $a = ($tab == 'staffbreakdown') ? format_string(simplesscheduler_get_teacher_name($simplesscheduler)) : '';
-    $tabname = get_string($tab, 'simplesscheduler', strtolower($a));
-    $row[] = new tabobject($tabname, "view.php?what=viewstatistics&amp;id=$cm->id&amp;course=$simplesscheduler->course&amp;page=".$tab, $tabname);
+    $a = ($tab == 'staffbreakdown') ? format_string(simplescheduler_get_teacher_name($simplescheduler)) : '';
+    $tabname = get_string($tab, 'simplescheduler', strtolower($a));
+    $row[] = new tabobject($tabname, "view.php?what=viewstatistics&amp;id=$cm->id&amp;course=$simplescheduler->course&amp;page=".$tab, $tabname);
 }
 $tabrows[] = $row;
 
-print_tabs($tabrows, get_string($page, 'simplesscheduler'));
+print_tabs($tabrows, get_string($page, 'simplescheduler'));
 
 //display correct type of statistics by request
 
-$attendees = simplesscheduler_get_possible_attendees ($cm, $usergroups); 
+$attendees = simplescheduler_get_possible_attendees ($cm, $usergroups); 
 
 switch ($page) {
     case 'overall':
@@ -47,73 +47,73 @@ switch ($page) {
             SELECT
             COUNT(DISTINCT(a.studentid))
             FROM
-            {simplesscheduler_slots} s,
-            {simplesscheduler_appointment} a
+            {simplescheduler_slots} s,
+            {simplescheduler_appointment} a
             WHERE
             s.id = a.slotid AND
-            s.simplesschedulerid = ? AND
+            s.simpleschedulerid = ? AND
             a.attended = 1
             ';
-        $attended = $DB->count_records_sql($sql, array($simplesscheduler->id));
+        $attended = $DB->count_records_sql($sql, array($simplescheduler->id));
         
         $sql = '
             SELECT
             COUNT(DISTINCT(a.studentid))
             FROM
-            {simplesscheduler_slots} s,
-            {simplesscheduler_appointment} a
+            {simplescheduler_slots} s,
+            {simplescheduler_appointment} a
             WHERE
             s.id = a.slotid AND
-            s.simplesschedulerid = ? AND
+            s.simpleschedulerid = ? AND
             a.attended = 0
             ';
-        $registered = $DB->count_records_sql($sql, array($simplesscheduler->id));
+        $registered = $DB->count_records_sql($sql, array($simplescheduler->id));
         
         $sql = '
             SELECT
             COUNT(DISTINCT(s.id))
             FROM
-            {simplesscheduler_slots} s
+            {simplescheduler_slots} s
             LEFT JOIN
-            {simplesscheduler_appointment} a
+            {simplescheduler_appointment} a
             ON
             s.id = a.slotid
             WHERE
-            s.simplesschedulerid = ? AND
+            s.simpleschedulerid = ? AND
             s.teacherid = ? AND
             a.attended IS NULL
             ';
-        $freeowned = $DB->count_records_sql($sql, array($simplesscheduler->id, $USER->id));
+        $freeowned = $DB->count_records_sql($sql, array($simplescheduler->id, $USER->id));
         
         $sql = '
             SELECT
             COUNT(DISTINCT(s.id))
             FROM
-            {simplesscheduler_slots} s
+            {simplescheduler_slots} s
             LEFT JOIN
-            {simplesscheduler_appointment} a
+            {simplescheduler_appointment} a
             ON
             s.id = a.slotid
             WHERE
-            s.simplesschedulerid = ? AND
+            s.simpleschedulerid = ? AND
             s.teacherid != ? AND
             a.attended IS NULL
             ';
-        $freenotowned = $DB->count_records_sql($sql, array($simplesscheduler->id, $USER->id));
+        $freenotowned = $DB->count_records_sql($sql, array($simplescheduler->id, $USER->id));
         
         $allattendees = ($attendees) ? count($attendees) : 0 ;
         
-        $str = '<h3>'.get_string('attendable', 'simplesscheduler').'</h3>';
-        $str .= '<b>'.get_string('attendablelbl', 'simplesscheduler').'</b>: ' . $allattendees . '<br/>';
-        $str .= '<h3>'.get_string('attended', 'simplesscheduler').'</h3>';
-        $str .= '<b>'.get_string('attendedlbl', 'simplesscheduler').'</b>: ' . $attended . '<br/><br/>';
-        $str .= '<h3>'.get_string('unattended', 'simplesscheduler').'</h3>';
-        $str .= '<b>'.get_string('registeredlbl', 'simplesscheduler').'</b>: ' . $registered . '<br/>';
-        $str .= '<b>'.get_string('unregisteredlbl', 'simplesscheduler').'</b>: ' . ($allattendees - $registered - $attended) . '<br/>'; //BUGFIX
-        $str .= '<h3>'.get_string('availableslots', 'simplesscheduler').'</h3>';
-        $str .= '<b>'.get_string('availableslotsowned', 'simplesscheduler').'</b>: ' . $freeowned . '<br/>';
-        $str .= '<b>'.get_string('availableslotsnotowned', 'simplesscheduler').'</b>: ' . $freenotowned . '<br/>';
-        $str .= '<b>'.get_string('availableslotsall', 'simplesscheduler').'</b>: ' . ($freeowned + $freenotowned) . '<br/>';
+        $str = '<h3>'.get_string('attendable', 'simplescheduler').'</h3>';
+        $str .= '<b>'.get_string('attendablelbl', 'simplescheduler').'</b>: ' . $allattendees . '<br/>';
+        $str .= '<h3>'.get_string('attended', 'simplescheduler').'</h3>';
+        $str .= '<b>'.get_string('attendedlbl', 'simplescheduler').'</b>: ' . $attended . '<br/><br/>';
+        $str .= '<h3>'.get_string('unattended', 'simplescheduler').'</h3>';
+        $str .= '<b>'.get_string('registeredlbl', 'simplescheduler').'</b>: ' . $registered . '<br/>';
+        $str .= '<b>'.get_string('unregisteredlbl', 'simplescheduler').'</b>: ' . ($allattendees - $registered - $attended) . '<br/>'; //BUGFIX
+        $str .= '<h3>'.get_string('availableslots', 'simplescheduler').'</h3>';
+        $str .= '<b>'.get_string('availableslotsowned', 'simplescheduler').'</b>: ' . $freeowned . '<br/>';
+        $str .= '<b>'.get_string('availableslotsnotowned', 'simplescheduler').'</b>: ' . $freenotowned . '<br/>';
+        $str .= '<b>'.get_string('availableslotsall', 'simplescheduler').'</b>: ' . ($freeowned + $freenotowned) . '<br/>';
         
         echo $OUTPUT->box($str);
         
@@ -123,7 +123,7 @@ switch ($page) {
         
         if (!empty($attendees)) {
         	$table = new html_table();
-            $table->head  = array (get_string('student', 'simplesscheduler'), get_string('duration', 'simplesscheduler'));
+            $table->head  = array (get_string('student', 'simplescheduler'), get_string('duration', 'simplescheduler'));
             $table->align = array ('LEFT', 'CENTER');
             $table->width = '70%';
             $table->data = array();
@@ -132,16 +132,16 @@ switch ($page) {
                 a.studentid,
                 SUM(s.duration) as totaltime
                 FROM
-                {simplesscheduler_slots} s,
-                {simplesscheduler_appointment} a
+                {simplescheduler_slots} s,
+                {simplescheduler_appointment} a
                 WHERE
                 s.id = a.slotid AND
                 a.studentid > 0 AND
-                s.simplesschedulerid = ?
+                s.simpleschedulerid = ?
                 GROUP BY
                 a.studentid
                 ';
-            if ($statrecords = $DB->get_records_sql($sql, array($simplesscheduler->id))) {
+            if ($statrecords = $DB->get_records_sql($sql, array($simplescheduler->id))) {
                 foreach($statrecords as $aRecord){
                     $table->data[] = array (fullname($attendees[$aRecord->studentid]), $aRecord->totaltime); // BUGFIX
                 }
@@ -151,7 +151,7 @@ switch ($page) {
             echo html_writer::table($table);
         }
         else{
-            echo $OUTPUT->box(get_string('nostudents', 'simplesscheduler'), 'center', '70%');
+            echo $OUTPUT->box(get_string('nostudents', 'simplescheduler'), 'center', '70%');
         }
         break;
     case 'staffbreakdown':
@@ -161,22 +161,22 @@ switch ($page) {
             s.teacherid,
             SUM(s.duration) as totaltime
             FROM
-            {simplesscheduler_slots} s
+            {simplescheduler_slots} s
             LEFT JOIN
-            {simplesscheduler_appointment} a
+            {simplescheduler_appointment} a
             ON
             a.slotid = s.id
             WHERE
-            s.simplesschedulerid = ? AND
+            s.simpleschedulerid = ? AND
             
             a.studentid IS NOT NULL
             GROUP BY
             s.teacherid
             ';
-        if ($statrecords = $DB->get_records_sql($sql, array($simplesscheduler->id))) {
+        if ($statrecords = $DB->get_records_sql($sql, array($simplescheduler->id))) {
         	$table = new html_table();
             $table->width = '70%';
-            $table->head  = array (s(simplesscheduler_get_teacher_name($simplesscheduler)), get_string('cumulatedduration', 'simplesscheduler'));
+            $table->head  = array (s(simplescheduler_get_teacher_name($simplescheduler)), get_string('cumulatedduration', 'simplescheduler'));
             $table->align = array ('LEFT', 'CENTER');
             foreach($statrecords as $aRecord){
                 $aTeacher = $DB->get_record('user', array('id'=>$aRecord->teacherid));
@@ -194,22 +194,22 @@ switch ($page) {
             COUNT(*) as groupsize,
             MAX(s.duration) as duration
             FROM
-            {simplesscheduler_slots} s
+            {simplescheduler_slots} s
             LEFT JOIN
-            {simplesscheduler_appointment} a
+            {simplescheduler_appointment} a
             ON
             a.slotid = s.id
             WHERE
             a.studentid IS NOT NULL AND
-            simplesschedulerid = ?
+            simpleschedulerid = ?
             GROUP BY
             s.starttime
             ORDER BY
             groupsize DESC
             ';
-        if ($groupslots = $DB->get_records_sql($sql, array($simplesscheduler->id))){
+        if ($groupslots = $DB->get_records_sql($sql, array($simplescheduler->id))){
         	$table = new html_table();
-            $table->head  = array (get_string('duration', 'simplesscheduler'), get_string('appointments', 'simplesscheduler'));
+            $table->head  = array (get_string('duration', 'simplescheduler'), get_string('appointments', 'simplescheduler'));
             $table->align = array ('LEFT', 'CENTER');
             $table->width = '70%';
             
@@ -235,14 +235,14 @@ switch ($page) {
             COUNT(*) as groupsize,
             MAX(s.duration) as duration
             FROM 
-            {simplesscheduler_slots} s
+            {simplescheduler_slots} s
             LEFT JOIN
-            {simplesscheduler_appointment} a
+            {simplescheduler_appointment} a
             ON 
             a.slotid = s.id
             WHERE 
             a.studentid IS NOT NULL AND
-            simplesschedulerid = '{$simplesscheduler->id}'
+            simpleschedulerid = '{$simplescheduler->id}'
             GROUP BY
             s.starttime
             ORDER BY
@@ -250,7 +250,7 @@ switch ($page) {
             ";
         if ($groupslots = $DB->get_records_sql($sql)){
         	$table = new html_table();
-            $table->head  = array (get_string('groupsize', 'simplesscheduler'), get_string('occurrences', 'simplesscheduler'), get_string('cumulatedduration', 'simplesscheduler'));
+            $table->head  = array (get_string('groupsize', 'simplescheduler'), get_string('occurrences', 'simplescheduler'), get_string('cumulatedduration', 'simplescheduler'));
             $table->align = array ('LEFT', 'CENTER', 'CENTER');
             $table->width = '70%';
             $grouprows = array();
@@ -269,7 +269,7 @@ switch ($page) {
         }
 }
 echo '<br/>';
-print_continue("$CFG->wwwroot/mod/simplesscheduler/view.php?id=".$cm->id);
+print_continue("$CFG->wwwroot/mod/simplescheduler/view.php?id=".$cm->id);
 /// Finish the page
 echo $OUTPUT->footer($course);
 exit;

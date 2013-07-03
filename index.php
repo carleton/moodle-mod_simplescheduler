@@ -1,11 +1,11 @@
 <?PHP 
 
 /**
- * Main file of the simplesscheduler package.
- * It lists all the instances of simplesscheduler in a particular course.
+ * Main file of the simplescheduler package.
+ * It lists all the instances of simplescheduler in a particular course.
  * 
  * @package    mod
- * @subpackage simplesscheduler
+ * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -18,30 +18,30 @@ $id = required_param('id', PARAM_INT);   // course
 if (!$course = $DB->get_record('course', array('id' => $id))) {
     print_error('invalidcourseid');
 }
-$PAGE->set_url('/mod/simplesscheduler/index.php', array('id'=>$id));
+$PAGE->set_url('/mod/simplescheduler/index.php', array('id'=>$id));
 $PAGE->set_pagelayout('incourse');
 
 $coursecontext = get_context_instance(CONTEXT_COURSE, $id);
 require_login($course->id);
 
-add_to_log($course->id, 'simplesscheduler', 'view all', "index.php?id=$course->id", '');
+add_to_log($course->id, 'simplescheduler', 'view all', "index.php?id=$course->id", '');
 
 /// Get all required strings
 
-$strsimplesschedulers = get_string('modulenameplural', 'simplesscheduler');
-$strsimplesscheduler  = get_string('modulename', 'simplesscheduler');
+$strsimpleschedulers = get_string('modulenameplural', 'simplescheduler');
+$strsimplescheduler  = get_string('modulename', 'simplescheduler');
 
 /// Print the header
 
 $navlinks = array();
-$navlinks[] = array('name' => $strsimplesscheduler, 'link' => '', 'type' => 'title');    
+$navlinks[] = array('name' => $strsimplescheduler, 'link' => '', 'type' => 'title');    
 $navigation = build_navigation($navlinks);
-print_header_simple($strsimplesschedulers, '', $navigation, '', '', true, '', navmenu($course));
+print_header_simple($strsimpleschedulers, '', $navigation, '', '', true, '', navmenu($course));
 
 /// Get all the appropriate data
 
-if (!$simplesschedulers = get_all_instances_in_course('simplesscheduler', $course)) {
-    print_error('nosimplesschedulers', 'simplesscheduler', "../../course/view.php?id=$course->id");
+if (!$simpleschedulers = get_all_instances_in_course('simplescheduler', $course)) {
+    print_error('nosimpleschedulers', 'simplescheduler', "../../course/view.php?id=$course->id");
 }
 
 /// Print the list of instances 
@@ -64,17 +64,17 @@ if ($course->format == 'weeks') {
     $table->align = array ('LEFT', 'LEFT', 'LEFT');
 }
 
-foreach ($simplesschedulers as $simplesscheduler) {
-    if (!$simplesscheduler->visible) {
+foreach ($simpleschedulers as $simplescheduler) {
+    if (!$simplescheduler->visible) {
         //Show dimmed if the mod is hidden
-        $link = "<a class=\"dimmed\" href=\"view.php?id={$simplesscheduler->coursemodule}\">$simplesscheduler->name</a>";
+        $link = "<a class=\"dimmed\" href=\"view.php?id={$simplescheduler->coursemodule}\">$simplescheduler->name</a>";
     } else {
         //Show normal if the mod is visible
-        $link = "<a href=\"view.php?id={$simplesscheduler->coursemodule}\">$simplesscheduler->name</a>";
+        $link = "<a href=\"view.php?id={$simplescheduler->coursemodule}\">$simplescheduler->name</a>";
     }
-    if ($simplesscheduler->visible or has_capability('moodle/course:viewhiddenactivities', $coursecontext)) {
+    if ($simplescheduler->visible or has_capability('moodle/course:viewhiddenactivities', $coursecontext)) {
         if ($course->format == 'weeks' or $course->format == 'topics') {
-            $table->data[] = array ($simplesscheduler->section, $link);
+            $table->data[] = array ($simplescheduler->section, $link);
         } else {
             $table->data[] = array ($link);
         }

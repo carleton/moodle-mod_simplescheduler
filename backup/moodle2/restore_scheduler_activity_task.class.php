@@ -2,7 +2,7 @@
 
 /**
  * @package    mod
- * @subpackage simplesscheduler
+ * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -10,13 +10,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/simplesscheduler/backup/moodle2/restore_simplesscheduler_stepslib.php'); // Because it exists (must)
+require_once($CFG->dirroot . '/mod/simplescheduler/backup/moodle2/restore_simplescheduler_stepslib.php'); // Because it exists (must)
 
 /**
- * simplesscheduler restore task that provides all the settings and steps to perform one
+ * simplescheduler restore task that provides all the settings and steps to perform one
  * complete restore of the activity
  */
-class restore_simplesscheduler_activity_task extends restore_activity_task {
+class restore_simplescheduler_activity_task extends restore_activity_task {
 
     /**
      * Define (add) particular settings this activity can have
@@ -30,7 +30,7 @@ class restore_simplesscheduler_activity_task extends restore_activity_task {
      */
     protected function define_my_steps() {
         // Scheduler has only one structure step
-        $this->add_step(new restore_simplesscheduler_activity_structure_step('simplesscheduler_structure', 'simplesscheduler.xml'));
+        $this->add_step(new restore_simplescheduler_activity_structure_step('simplescheduler_structure', 'simplescheduler.xml'));
     }
 
     /**
@@ -40,7 +40,7 @@ class restore_simplesscheduler_activity_task extends restore_activity_task {
     static public function define_decode_contents() {
         $contents = array();
 
-        $contents[] = new restore_decode_content('simplesscheduler', array('intro'), 'simplesscheduler');
+        $contents[] = new restore_decode_content('simplescheduler', array('intro'), 'simplescheduler');
 
         return $contents;
     }
@@ -52,8 +52,8 @@ class restore_simplesscheduler_activity_task extends restore_activity_task {
     static public function define_decode_rules() {
         $rules = array();
 
-        $rules[] = new restore_decode_rule('SCHEDULERVIEWBYID', '/mod/simplesscheduler/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('SCHEDULERINDEX', '/mod/simplesscheduler/index.php?id=$1', 'course');
+        $rules[] = new restore_decode_rule('SCHEDULERVIEWBYID', '/mod/simplescheduler/view.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('SCHEDULERINDEX', '/mod/simplescheduler/index.php?id=$1', 'course');
 
         return $rules;
 
@@ -62,15 +62,15 @@ class restore_simplesscheduler_activity_task extends restore_activity_task {
     /**
      * Define the restore log rules that will be applied
      * by the {@link restore_logs_processor} when restoring
-     * simplesscheduler logs. It must return one array
+     * simplescheduler logs. It must return one array
      * of {@link restore_log_rule} objects
      */
     static public function define_restore_log_rules() {
         $rules = array();
 
-        $rules[] = new restore_log_rule('simplesscheduler', 'add', 'view.php?id={course_module}', '{simplesscheduler}');
-        $rules[] = new restore_log_rule('simplesscheduler', 'update', 'view.php?id={course_module}', '{simplesscheduler}');
-        $rules[] = new restore_log_rule('simplesscheduler', 'view', 'view.php?id={course_module}', '{simplesscheduler}');
+        $rules[] = new restore_log_rule('simplescheduler', 'add', 'view.php?id={course_module}', '{simplescheduler}');
+        $rules[] = new restore_log_rule('simplescheduler', 'update', 'view.php?id={course_module}', '{simplescheduler}');
+        $rules[] = new restore_log_rule('simplescheduler', 'view', 'view.php?id={course_module}', '{simplescheduler}');
 
         return $rules;
     }
@@ -88,7 +88,7 @@ class restore_simplesscheduler_activity_task extends restore_activity_task {
     static public function define_restore_log_rules_for_course() {
         $rules = array();
 
-        $rules[] = new restore_log_rule('simplesscheduler', 'view all', 'index.php?id={course}', null);
+        $rules[] = new restore_log_rule('simplescheduler', 'view all', 'index.php?id={course}', null);
 
         return $rules;
     }

@@ -1,14 +1,14 @@
 <?php
 
 /**
- * General library for the simplesscheduler module.
+ * General library for the simplescheduler module.
  * 
  * @package    mod
- * @subpackage simplesscheduler
+ * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @todo should we remove and stop calling simplesscheduler_free_late_unused_slots?
+ * @todo should we remove and stop calling simplescheduler_free_late_unused_slots?
  * @todo notifications are send indiscriminately right now should we skip them for appointments that have passed?
  */
 
@@ -24,7 +24,7 @@ require_once(dirname(__FILE__).'/customlib.php');
  * @todo check consistence
  * @return string printable date
  */
-function simplesscheduler_userdate($date, $local=0) {
+function simplescheduler_userdate($date, $local=0) {
     if ($date == 0) {
         return '';
     } else {
@@ -40,7 +40,7 @@ function simplesscheduler_userdate($date, $local=0) {
  * @todo check consistence
  * @return string printable time
  */
-function simplesscheduler_usertime($date, $local=0) {
+function simplescheduler_usertime($date, $local=0) {
     if ($date == 0) {
         return '';
     } else {
@@ -60,9 +60,9 @@ function simplesscheduler_usertime($date, $local=0) {
  * @param int $cmid the course module
  * @return array of moodle user records
  */
-function simplesscheduler_get_attendants($cmid){
+function simplescheduler_get_attendants($cmid){
     $context = get_context_instance(CONTEXT_MODULE, $cmid);
-    $attendants = get_users_by_capability ($context, 'mod/simplesscheduler:attend', 'u.id,lastname,firstname,email,picture', 'lastname, firstname', '', '', '', '', false, false, false);
+    $attendants = get_users_by_capability ($context, 'mod/simplescheduler:attend', 'u.id,lastname,firstname,email,picture', 'lastname, firstname', '', '', '', '', false, false, false);
     return $attendants;
 }
 
@@ -73,16 +73,16 @@ function simplesscheduler_get_attendants($cmid){
  *                  users who are in one of these group(s).
  * @return array of moodle user records
  */
-function simplesscheduler_get_possible_attendees($cm, $groups=''){
+function simplescheduler_get_possible_attendees($cm, $groups=''){
 		
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-    $attendees = get_users_by_capability($context, 'mod/simplesscheduler:appoint', '', 'lastname, firstname', '', '', $groups, '', false, false, false);
+    $attendees = get_users_by_capability($context, 'mod/simplescheduler:appoint', '', 'lastname, firstname', '', '', $groups, '', false, false, false);
     return $attendees;
 }
 
 /**
  * Returns an array of slots that would overlap with this one.
- * @param int $simplesschedulerid the current activity module id
+ * @param int $simpleschedulerid the current activity module id
  * @param int $starttimethe start of time slot as a timestamp
  * @param int $endtime end of time slot as a timestamp
  * @param int $teacher if not null, the id of the teacher constraint, 0 otherwise standas for "all teachers"
@@ -92,28 +92,28 @@ function simplesscheduler_get_possible_attendees($cm, $groups=''){
  * @uses $DB
  * @return array array of conflicting slots
  */
-function simplesscheduler_get_conflicts($simplesschedulerid, $starttime, $endtime, $teacher=0, $student=0, $others=SCHEDULER_SELF, $careexclusive=true) {
+function simplescheduler_get_conflicts($simpleschedulerid, $starttime, $endtime, $teacher=0, $student=0, $others=SCHEDULER_SELF, $careexclusive=true) {
     global $CFG, $DB;
     
     switch ($others){
         case SCHEDULER_SELF:
-            $simplesschedulerScope = "s.simplesschedulerid = {$simplesschedulerid} AND ";
+            $simpleschedulerScope = "s.simpleschedulerid = {$simpleschedulerid} AND ";
             break;
         case SCHEDULER_OTHERS:
-            $simplesschedulerScope = "s.simplesschedulerid != {$simplesschedulerid} AND ";
+            $simpleschedulerScope = "s.simpleschedulerid != {$simpleschedulerid} AND ";
             break;
         default:
-            $simplesschedulerScope = '';
+            $simpleschedulerScope = '';
     }
     $teacherScope = ($teacher != 0) ? "s.teacherid = {$teacher} AND " : '' ;
-    $studentJoin = ($student != 0) ? "JOIN {simplesscheduler_appointment} a ON a.slotid = s.id AND a.studentid = {$student} " : '' ;
+    $studentJoin = ($student != 0) ? "JOIN {simplescheduler_appointment} a ON a.slotid = s.id AND a.studentid = {$student} " : '' ;
     $exclusiveClause = ($careexclusive) ? "exclusivity != 0 AND " : '' ;
 	$timeClause = "( (s.starttime <= {$starttime} AND s.starttime + s.duration * 60 > {$starttime}) OR ".
         		  "  (s.starttime < {$endtime} AND s.starttime + s.duration * 60 >= {$endtime}) OR ".
         		  "  (s.starttime >= {$starttime} AND s.starttime + s.duration * 60 <= {$endtime}) ) ";
 
-    $sql = 'SELECT s.* from {simplesscheduler_slots} s '.$studentJoin.' WHERE '.
-    		 $simplesschedulerScope.$teacherScope.$exclusiveClause.$timeClause;
+    $sql = 'SELECT s.* from {simplescheduler_slots} s '.$studentJoin.' WHERE '.
+    		 $simpleschedulerScope.$teacherScope.$exclusiveClause.$timeClause;
         
     $conflicting = $DB->get_records_sql($sql);
     
@@ -122,11 +122,11 @@ function simplesscheduler_get_conflicts($simplesschedulerid, $starttime, $endtim
 
 /**
  * retreives the unappointed slots
- * @param int $simplesschedulerid
+ * @param int $simpleschedulerid
  * @uses $CFG
  * @uses $DB
  */
-function simplesscheduler_get_unappointed_slots($simplesschedulerid){
+function simplescheduler_get_unappointed_slots($simpleschedulerid){
     global $CFG, $DB;
     
     $sql = '
@@ -134,13 +134,13 @@ function simplesscheduler_get_unappointed_slots($simplesschedulerid){
         s.*,
         MAX(a.studentid) AS appointed
         FROM
-        {simplesscheduler_slots} s
+        {simplescheduler_slots} s
         LEFT JOIN
-        {simplesscheduler_appointment} a
+        {simplescheduler_appointment} a
         ON
         a.slotid = s.id
         WHERE
-        s.simplesschedulerid = ?
+        s.simpleschedulerid = ?
         GROUP BY
         s.id
         HAVING
@@ -148,33 +148,33 @@ function simplesscheduler_get_unappointed_slots($simplesschedulerid){
         ORDER BY
         s.starttime ASC
         ';
-    $recs = $DB->get_records_sql($sql, array($simplesschedulerid));
+    $recs = $DB->get_records_sql($sql, array($simpleschedulerid));
     return $recs;
 }
 
 /**
  * retreives the available slots in several situations with a complex query
  * @param int $studentid
- * @param int $simplesschedulerid
+ * @param int $simpleschedulerid
  * @param boolean $studentside changes query if we are getting slots in student context
  * @uses $CFG
  * @uses $DB
  *
  * @todo do we need to retain this studentside appointedbyme thing?
  */
-function simplesscheduler_get_available_slots($studentid, $simplesschedulerid, $studentside=false){
+function simplescheduler_get_available_slots($studentid, $simpleschedulerid, $studentside=false){
     global $CFG, $DB;
     
     // more compatible tryout
-    $slots = $DB->get_records('simplesscheduler_slots', array('simplesschedulerid' => $simplesschedulerid), 'starttime');
+    $slots = $DB->get_records('simplescheduler_slots', array('simpleschedulerid' => $simpleschedulerid), 'starttime');
     $retainedslots = array();
     if ($slots){
         foreach($slots as $slot){
-            $slot->population = $DB->count_records('simplesscheduler_appointment', array('slotid' => $slot->id));
+            $slot->population = $DB->count_records('simplescheduler_appointment', array('slotid' => $slot->id));
             $slot->appointed = ($slot->population > 0);
-            $slot->attended = $DB->record_exists('simplesscheduler_appointment', array('slotid' => $slot->id, 'attended' => 1));
+            $slot->attended = $DB->record_exists('simplescheduler_appointment', array('slotid' => $slot->id, 'attended' => 1));
             if ($studentside){
-                $slot->appointedbyme = $DB->record_exists('simplesscheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid));
+                $slot->appointedbyme = $DB->record_exists('simplescheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid));
                 if ($slot->appointedbyme) {
                     $retainedslots[] = $slot;
                     continue;
@@ -192,33 +192,33 @@ function simplesscheduler_get_available_slots($studentid, $simplesschedulerid, $
 }
 
 /**
- * Returns true if a student has an appointment in a particular simplesscheduler.
+ * Returns true if a student has an appointment in a particular simplescheduler.
  *
  * @param int $studentid
- * @param int $simplesschedulerid
+ * @param int $simpleschedulerid
  * @return boolean
  */
-function simplesscheduler_student_has_appointment($studentid, $simplesschedulerid)
+function simplescheduler_student_has_appointment($studentid, $simpleschedulerid)
 {
 	global $DB;
 	$sql = '
 			SELECT
 			COUNT(*)
 			FROM
-			{simplesscheduler_slots} s,
-			{simplesscheduler_appointment} a
+			{simplescheduler_slots} s,
+			{simplescheduler_appointment} a
 			WHERE
 			s.id = a.slotid AND
 			a.studentid = ? AND
-			s.simplesschedulerid = ?
+			s.simpleschedulerid = ?
     	';
-    return ($DB->count_records_sql($sql, array($studentid, $simplesschedulerid)));
+    return ($DB->count_records_sql($sql, array($studentid, $simpleschedulerid)));
 }
 
 /**
- * checks if user has an appointment in this simplesscheduler
+ * checks if user has an appointment in this simplescheduler
  * @param object $userlist
- * @param object $simplesscheduler
+ * @param object $simplescheduler
  * @param boolean $student, if true, is a student, a teacher otherwise
  * @param boolean $unattended, if true, only checks for unattended slots
  * @param string $otherthan giving a slotid, excludes this slot from the search
@@ -226,7 +226,7 @@ function simplesscheduler_student_has_appointment($studentid, $simplesscheduleri
  * @uses $DB
  * @return the count of records
  */
-function simplesscheduler_has_slot($userlist, &$simplesscheduler, $student=true, $unattended = false, $otherthan = 0){
+function simplescheduler_has_slot($userlist, &$simplescheduler, $student=true, $unattended = false, $otherthan = 0){
     global $CFG, $DB;
     
     $userlist = str_replace(',', "','", $userlist);
@@ -239,18 +239,18 @@ function simplesscheduler_has_slot($userlist, &$simplesscheduler, $student=true,
             SELECT
             COUNT(*)
             FROM
-            {simplesscheduler_slots} s,
-            {simplesscheduler_appointment} a
+            {simplescheduler_slots} s,
+            {simplescheduler_appointment} a
             WHERE
             a.slotid = s.id AND
-            s.simplesschedulerid = ? AND
+            s.simpleschedulerid = ? AND
             a.studentid IN ('{$userlist}')
             $unattendedClause
             $otherthanClause
             ";
-        return $DB->count_records_sql($sql, array($simplesscheduler->id));
+        return $DB->count_records_sql($sql, array($simplescheduler->id));
     } else {
-        return $DB->count_records('simplesscheduler_slots', array('teacherid' => $userlist, 'simplesschedulerid' => $simplesscheduler->id));
+        return $DB->count_records('simplescheduler_slots', array('teacherid' => $userlist, 'simpleschedulerid' => $simplescheduler->id));
     }
 }
 
@@ -261,7 +261,7 @@ function simplesscheduler_has_slot($userlist, &$simplesscheduler, $student=true,
  * @uses $DB
  * @return an array of users
  */
-function simplesscheduler_get_appointed($slotid){
+function simplescheduler_get_appointed($slotid){
     global $CFG, $DB;
     
     $sql = "
@@ -269,7 +269,7 @@ function simplesscheduler_get_appointed($slotid){
         u.*
         FROM
         {user} u,
-        {simplesscheduler_appointment} a
+        {simplescheduler_appointment} a
         WHERE
         u.id = a.studentid AND
         a.slotid = ?
@@ -286,50 +286,50 @@ function simplesscheduler_get_appointed($slotid){
  * - deletes all appointments
  *
  * If param notify is not explicitly set, deleting triggers notification on modifications to upcoming slots
- * provided that notification is enabled for the simplesscheduler as a whole.
+ * provided that notification is enabled for the simplescheduler as a whole.
  *
  * @param int slotid
- * @param stdClass $simplesscheduler (optional)
+ * @param stdClass $simplescheduler (optional)
  * @param boolean notify (if true, will send, if false, will not, if null uses logic)
  * @uses $DB
  */
-function simplesscheduler_delete_slot($slotid, $simplesscheduler=null, $notify=NULL){
+function simplescheduler_delete_slot($slotid, $simplescheduler=null, $notify=NULL){
     global $CFG, $DB;
     
-    if ($slot = $DB->get_record('simplesscheduler_slots', array('id' => $slotid))) {
-        simplesscheduler_delete_calendar_events($slot);
+    if ($slot = $DB->get_record('simplescheduler_slots', array('id' => $slotid))) {
+        simplescheduler_delete_calendar_events($slot);
         
-        if (!$simplesscheduler){ // fetch optimization
-	        $simplesscheduler = $DB->get_record('simplesscheduler', array('id' => $slot->simplesschedulerid));
+        if (!$simplescheduler){ // fetch optimization
+	        $simplescheduler = $DB->get_record('simplescheduler', array('id' => $slot->simpleschedulerid));
     	}
         
         if (is_null($notify)) // if our slot is a future slot and 
         {
-        	$notify = ($simplesscheduler->allownotifications && (time() < $slot->starttime));
+        	$notify = ($simplescheduler->allownotifications && (time() < $slot->starttime));
         }
         
         // do notifications before we delete the slot
         if ($notify)
     	{
     		// find students needing notification if any
-    		$students = $DB->get_records('simplesscheduler_appointment', array('slotid' => $slot->id), '', 'id,studentid');
+    		$students = $DB->get_records('simplescheduler_appointment', array('slotid' => $slot->id), '', 'id,studentid');
     		if (!empty($students))
     		{
-    			include_once($CFG->dirroot.'/mod/simplesscheduler/mailtemplatelib.php');
+    			include_once($CFG->dirroot.'/mod/simplescheduler/mailtemplatelib.php');
     			foreach ($students as $student)
     			{
-    				$course = $DB->get_record('course', array('id' => $simplesscheduler->course));
+    				$course = $DB->get_record('course', array('id' => $simplescheduler->course));
     				$student = $DB->get_record('user', array('id'=>$student->studentid));
                     $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
-                    $vars = simplesscheduler_get_mail_variables($simplesscheduler,$slot,$teacher,$student);
-                    simplesscheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'simplesscheduler');
+                    $vars = simplescheduler_get_mail_variables($simplescheduler,$slot,$teacher,$student);
+                    simplescheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'simplescheduler');
     			}
     		}
     	}
     	
     	// delete the slot
-        $DB->delete_records('simplesscheduler_slots', array('id' => $slotid));
-    	$DB->delete_records('simplesscheduler_appointment', array('slotid' => $slotid));
+        $DB->delete_records('simplescheduler_slots', array('id' => $slotid));
+    	$DB->delete_records('simplescheduler_appointment', array('slotid' => $slotid));
     }
 }
 
@@ -341,64 +341,64 @@ function simplesscheduler_delete_slot($slotid, $simplesscheduler=null, $notify=N
  * @uses $CFG
  * @uses $DB
  */
-function simplesscheduler_get_appointments($slotid){
+function simplescheduler_get_appointments($slotid){
     global $CFG, $DB;
-    $apps = $DB->get_records('simplesscheduler_appointment', array('slotid' => $slotid));
+    $apps = $DB->get_records('simplescheduler_appointment', array('slotid' => $slotid));
     return $apps;
 }
 
 /**
- * Deletes records from simplesscheduler_appointment table
+ * Deletes records from simplescheduler_appointment table
  *
  * @param int $appointmentid
  * @param object $slot
  * @uses $DB
  */
-function simplesscheduler_delete_appointment($appointmentid) {
+function simplescheduler_delete_appointment($appointmentid) {
     global $DB;
     
-    if (!$oldrecord = $DB->get_record('simplesscheduler_appointment', array('id' => $appointmentid))) return ;
-    if (!$DB->delete_records('simplesscheduler_appointment', array('id' => $appointmentid))) {
+    if (!$oldrecord = $DB->get_record('simplescheduler_appointment', array('id' => $appointmentid))) return ;
+    if (!$DB->delete_records('simplescheduler_appointment', array('id' => $appointmentid))) {
             print_error('Couldn\'t delete old choice from database');
     }
 }
 
 /**
- * get the last considered location in this simplesscheduler
- * @param reference $simplesscheduler
+ * get the last considered location in this simplescheduler
+ * @param reference $simplescheduler
  * @uses $USER
  * @uses $DB
  * @return the last known location for the current user (teacher)
  */
-function simplesscheduler_get_last_location(&$simplesscheduler){
+function simplescheduler_get_last_location(&$simplescheduler){
     global $USER, $DB;
     
     // we could have made an embedded query in Mysql 5.0
     $lastlocation = '';
-    $select = 'simplesschedulerid = ? AND teacherid = ? GROUP BY timemodified';
-    $maxtime = $DB->get_field_select('simplesscheduler_slots', 'MAX(timemodified)', $select, array($simplesscheduler->id, $USER->id), IGNORE_MULTIPLE);
+    $select = 'simpleschedulerid = ? AND teacherid = ? GROUP BY timemodified';
+    $maxtime = $DB->get_field_select('simplescheduler_slots', 'MAX(timemodified)', $select, array($simplescheduler->id, $USER->id), IGNORE_MULTIPLE);
     if ($maxtime){
         $select = "
-            simplesschedulerid = :simplesschedulerid AND 
+            simpleschedulerid = :simpleschedulerid AND 
             timemodified = :maxtime AND 
             teacherid = :userid 
             GROUP BY timemodified
             ";
-        $maxid = $DB->get_field_select('simplesscheduler_slots', 'MAX(timemodified)', $select, array('simplesschedulerid' => $simplesscheduler->id, 'maxtime' => $maxtime, 'userid' => $USER->id), IGNORE_MULTIPLE );
-        $lastlocation = $DB->get_field('simplesscheduler_slots', 'appointmentlocation', array('id' => $maxid));
+        $maxid = $DB->get_field_select('simplescheduler_slots', 'MAX(timemodified)', $select, array('simpleschedulerid' => $simplescheduler->id, 'maxtime' => $maxtime, 'userid' => $USER->id), IGNORE_MULTIPLE );
+        $lastlocation = $DB->get_field('simplescheduler_slots', 'appointmentlocation', array('id' => $maxid));
     }
     return $lastlocation;
 }
 
 /**
  * frees all slots unapppointed that are in the past
- * @param int $simplesschedulerid
+ * @param int $simpleschedulerid
  * @param int $now give a date reference for measuring the "past" ! If 0, uses current time
  * @uses $CFG
  * @uses $DB
  * @return void
  */
-function simplesscheduler_free_late_unused_slots($simplesschedulerid, $now=0){
+function simplescheduler_free_late_unused_slots($simpleschedulerid, $now=0){
     global $CFG, $DB;
     
     if(!$now) {
@@ -408,20 +408,20 @@ function simplesscheduler_free_late_unused_slots($simplesschedulerid, $now=0){
         SELECT DISTINCT
         s.id
         FROM
-        {simplesscheduler_slots} s
+        {simplescheduler_slots} s
         LEFT JOIN
-        {simplesscheduler_appointment} a
+        {simplescheduler_appointment} a
         ON
         s.id = a.slotid
         WHERE
         a.studentid IS NULL AND
-        s.simplesschedulerid = ? AND
+        s.simpleschedulerid = ? AND
         starttime < ?
         ';
-    $to_delete = $DB->get_records_sql($sql, array($simplesschedulerid, $now));
+    $to_delete = $DB->get_records_sql($sql, array($simpleschedulerid, $now));
     if ($to_delete){
         list($usql, $params) = $DB->get_in_or_equal(array_keys($to_delete));
-        $DB->delete_records_select('simplesscheduler_slots', " id $usql ", $params);
+        $DB->delete_records_select('simplescheduler_slots', " id $usql ", $params);
     }
 }
 
@@ -433,13 +433,13 @@ function simplesscheduler_free_late_unused_slots($simplesschedulerid, $now=0){
  /**
   * Updates events in the calendar to the information provided.
   * If the events do not yet exist it creates them.
-  * The only argument this function requires is the complete database record of a simplesscheduler slot.
-  * The course parameter should be the full record of the course for this simplesscheduler so the 
+  * The only argument this function requires is the complete database record of a simplescheduler slot.
+  * The course parameter should be the full record of the course for this simplescheduler so the 
   * teacher-title and student-title can be determined.
   * @param object $slot the slot instance
   * @param object $course the actual course
   */
-function simplesscheduler_add_update_calendar_events($slot, $course) {    
+function simplescheduler_add_update_calendar_events($slot, $course) {    
     
     global $DB;
     
@@ -448,7 +448,7 @@ function simplesscheduler_add_update_calendar_events($slot, $course) {
     $eventStartTime = $slot->starttime;
     
     // get all students attached to that slot
-    $appointments = $DB->get_records('simplesscheduler_appointment', array('slotid'=>$slot->id), '', 'studentid');
+    $appointments = $DB->get_records('simplescheduler_appointment', array('slotid'=>$slot->id), '', 'studentid');
     
     // nothing to do
     if (!$appointments) return;
@@ -458,15 +458,15 @@ function simplesscheduler_add_update_calendar_events($slot, $course) {
     $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
     $students = $DB->get_records_list('user', 'id', $studentids);
     
-    $simplesschedulerDescription = $DB->get_field('simplesscheduler', 'intro', array('id' => $slot->simplesschedulerid));
-    $simplesschedulerName = $DB->get_field('simplesscheduler', 'name', array('id' => $slot->simplesschedulerid));
-    $teacherEventDescription = "$simplesschedulerName<br/><br/>$simplesschedulerDescription";
+    $simpleschedulerDescription = $DB->get_field('simplescheduler', 'intro', array('id' => $slot->simpleschedulerid));
+    $simpleschedulerName = $DB->get_field('simplescheduler', 'name', array('id' => $slot->simpleschedulerid));
+    $teacherEventDescription = "$simpleschedulerName<br/><br/>$simpleschedulerDescription";
     
     $studentEventDescription = $teacherEventDescription;
     
     //the eventtype field stores a code that is used to relate calendar events with the slots that 'own' them.
     //the code is SSstu (for a student event) or SSsup (for a teacher event).
-    //then, the id of the simplesscheduler slot that it belongs to.
+    //then, the id of the simplescheduler slot that it belongs to.
     //finally, the courseID. I can't remember why, TODO: remember the good reason.
     //all in a colon delimited string. This will run into problems when the IDs of slots and courses are bigger than 7 digits in length...    
     $teacherEventType = "SSsup:{$slot->id}:{$course->id}";
@@ -476,13 +476,13 @@ function simplesscheduler_add_update_calendar_events($slot, $course) {
     
     foreach($students as $student){
         $studentNames[] = fullname($student);
-        $studentEventName = get_string('meetingwith', 'simplesscheduler').' '.get_string('teacher','simplesscheduler').', '.fullname($teacher);
+        $studentEventName = get_string('meetingwith', 'simplescheduler').' '.get_string('teacher','simplescheduler').', '.fullname($teacher);
         $studentEventName = shorten_text($studentEventName, 200);
         
         //firstly, deal with the student's event
         //if it exists, update it, else create a new one.
 
-		$studentEvent = simplesscheduler_get_student_event($slot, $student->id);
+		$studentEvent = simplescheduler_get_student_event($slot, $student->id);
         
         if ($studentEvent) {
             $studentEvent->name = $studentEventName;
@@ -490,8 +490,8 @@ function simplesscheduler_add_update_calendar_events($slot, $course) {
             $studentEvent->format = 1;
             $studentEvent->userid = $student->id;
             $studentEvent->timemodified = time();
-            // $studentEvent->modulename = 'simplesscheduler'; // Issue on delete/edit link
-            $studentEvent->instance = $slot->simplesschedulerid;
+            // $studentEvent->modulename = 'simplescheduler'; // Issue on delete/edit link
+            $studentEvent->instance = $slot->simpleschedulerid;
             $studentEvent->timestart = $eventStartTime;
             $studentEvent->timeduration = $eventDuration;
             $studentEvent->visible = 1;
@@ -504,8 +504,8 @@ function simplesscheduler_add_update_calendar_events($slot, $course) {
             $studentEvent->format = 1;
             $studentEvent->userid = $student->id;
             $studentEvent->timemodified = time();
-            // $studentEvent->modulename = 'simplesscheduler';
-            $studentEvent->instance = $slot->simplesschedulerid;
+            // $studentEvent->modulename = 'simplescheduler';
+            $studentEvent->instance = $slot->simpleschedulerid;
             $studentEvent->timestart = $eventStartTime;
             $studentEvent->timeduration = $eventDuration;
             $studentEvent->visible = 1;
@@ -518,20 +518,20 @@ function simplesscheduler_add_update_calendar_events($slot, $course) {
     }
     
     if (count($studentNames) > 1){
-        $teacherEventName = get_string('meetingwithplural', 'simplesscheduler').' '.get_string('students', 'simplesscheduler').', '.implode(', ', $studentNames);
+        $teacherEventName = get_string('meetingwithplural', 'simplescheduler').' '.get_string('students', 'simplescheduler').', '.implode(', ', $studentNames);
     } else {
-        $teacherEventName = get_string('meetingwith', 'simplesscheduler').' '.get_string('student', 'simplesscheduler').', '.$studentNames[0];
+        $teacherEventName = get_string('meetingwith', 'simplescheduler').' '.get_string('student', 'simplescheduler').', '.$studentNames[0];
     }
     $teacherEventName = shorten_text($teacherEventName, 200);
-	$teacherEvent = simplesscheduler_get_teacher_event($slot);
+	$teacherEvent = simplescheduler_get_teacher_event($slot);
     if ($teacherEvent) {
         $teacherEvent->name = $teacherEventName;
         $teacherEvent->description = $teacherEventDescription;
         $teacherEvent->format = 1;
         $teacherEvent->userid = $slot->teacherid;
         $teacherEvent->timemodified = time();
-        // $teacherEvent->modulename = 'simplesscheduler';
-        $teacherEvent->instance = $slot->simplesschedulerid;
+        // $teacherEvent->modulename = 'simplescheduler';
+        $teacherEvent->instance = $slot->simpleschedulerid;
         $teacherEvent->timestart = $eventStartTime;
         $teacherEvent->timeduration = $eventDuration;
         $teacherEvent->visible = 1;
@@ -543,9 +543,9 @@ function simplesscheduler_add_update_calendar_events($slot, $course) {
         $teacherEvent->description = $teacherEventDescription;
         $teacherEvent->format = 1;
         $teacherEvent->userid = $slot->teacherid;
-        $teacherEvent->instance = $slot->simplesschedulerid;
+        $teacherEvent->instance = $slot->simpleschedulerid;
         $teacherEvent->timemodified = time();
-        // $teacherEvent->modulename = 'simplesscheduler';
+        // $teacherEvent->modulename = 'simplescheduler';
         $teacherEvent->timestart = $eventStartTime;
         $teacherEvent->timeduration = $eventDuration;
         $teacherEvent->visible = 1;
@@ -557,21 +557,21 @@ function simplesscheduler_add_update_calendar_events($slot, $course) {
 
 
 /**
- * Will delete calendar events for a given simplesscheduler slot, and not complain if the record does not exist.
- * The only argument this function requires is the complete database record of a simplesscheduler slot.
+ * Will delete calendar events for a given simplescheduler slot, and not complain if the record does not exist.
+ * The only argument this function requires is the complete database record of a simplescheduler slot.
  * @param object $slot the slot instance
  * @uses $DB 
  * @return boolean true if success, false otherwise
  */
-function simplesscheduler_delete_calendar_events($slot) {
+function simplescheduler_delete_calendar_events($slot) {
     global $DB;
     
-    $simplesscheduler = $DB->get_record('simplesscheduler', array('id'=>$slot->simplesschedulerid));
+    $simplescheduler = $DB->get_record('simplescheduler', array('id'=>$slot->simpleschedulerid));
     
-    if (!$simplesscheduler) return false ;
+    if (!$simplescheduler) return false ;
     
-    $teacherEventType = "SSsup:{$slot->id}:{$simplesscheduler->course}";
-    $studentEventType = "SSstu:{$slot->id}:{$simplesscheduler->course}";
+    $teacherEventType = "SSsup:{$slot->id}:{$simplescheduler->course}";
+    $studentEventType = "SSstu:{$slot->id}:{$simplescheduler->course}";
     
     $teacherDeletionSuccess = $DB->delete_records('event', array('eventtype'=>$teacherEventType));
     $studentDeletionSuccess = $DB->delete_records('event', array('eventtype'=>$studentEventType));
@@ -583,23 +583,23 @@ function simplesscheduler_delete_calendar_events($slot) {
 /**
  * This function decides if a slot should have calendar events associated with it,
  * and calls the update/delete functions if neccessary.
- * it must be passed the complete simplesscheduler_slots record to function correctly.
- * The course parameter should be the record that belongs to the course for this simplesscheduler.
+ * it must be passed the complete simplescheduler_slots record to function correctly.
+ * The course parameter should be the record that belongs to the course for this simplescheduler.
  * @param object $slot the slot instance
  * @param object $course the actual course
  * @uses $DB
  */
-function simplesscheduler_events_update($slot, $course) {
+function simplescheduler_events_update($slot, $course) {
     global $DB;
     
-    $slotDoesntHaveAStudent = !$DB->count_records('simplesscheduler_appointment', array('slotid' => $slot->id));
-    $slotWasAttended = $DB->count_records('simplesscheduler_appointment', array('slotid' => $slot->id, 'attended' => 1));
+    $slotDoesntHaveAStudent = !$DB->count_records('simplescheduler_appointment', array('slotid' => $slot->id));
+    $slotWasAttended = $DB->count_records('simplescheduler_appointment', array('slotid' => $slot->id, 'attended' => 1));
     
     if ($slotDoesntHaveAStudent || $slotWasAttended) {
-        simplesscheduler_delete_calendar_events($slot);
+        simplescheduler_delete_calendar_events($slot);
     }
     else {
-        simplesscheduler_add_update_calendar_events($slot, $course);
+        simplescheduler_add_update_calendar_events($slot, $course);
     }
 }
 
@@ -611,11 +611,11 @@ function simplesscheduler_events_update($slot, $course) {
  * @uses $DB
  * @return stdClass the calendar event of the teacher
  */
-function simplesscheduler_get_teacher_event($slot) {
+function simplescheduler_get_teacher_event($slot) {
     global $DB;
     
-    //first we need to know the course that the simplesscheduler belongs to...
-    $courseid = $DB->get_field('simplesscheduler', 'course', array('id' => $slot->simplesschedulerid), MUST_EXIST);
+    //first we need to know the course that the simplescheduler belongs to...
+    $courseid = $DB->get_field('simplescheduler', 'course', array('id' => $slot->simpleschedulerid), MUST_EXIST);
     
     //now try to fetch the event records...
     $teacherEventType = "SSsup:{$slot->id}:{$courseid}";
@@ -634,11 +634,11 @@ function simplesscheduler_get_teacher_event($slot) {
  * @uses $DB
  * @return stdClass the calendar event of the student
  */
-function simplesscheduler_get_student_event($slot, $studentid) {
+function simplescheduler_get_student_event($slot, $studentid) {
     global $DB;
     
-    //first we need to know the course that the simplesscheduler belongs to...
-    $courseid = $DB->get_field('simplesscheduler', 'course', array('id' => $slot->simplesschedulerid), MUST_EXIST);
+    //first we need to know the course that the simplescheduler belongs to...
+    $courseid = $DB->get_field('simplescheduler', 'course', array('id' => $slot->simpleschedulerid), MUST_EXIST);
     
     //now try to fetch the event records...
     $studentEventType = "SSstu:{$slot->id}:{$courseid}";
@@ -650,21 +650,21 @@ function simplesscheduler_get_student_event($slot, $studentid) {
 /**
  * Construct an array with subtitution rules for mail templates, relating to 
  * a single appointment. Any of the parameters can be null.
- * @param object $simplesscheduler The simplesscheduler instance
+ * @param object $simplescheduler The simplescheduler instance
  * @param object $slot The slot data, obtained with get_record().
  * @param user $attendant A {@link $USER} object describing the attendant (teacher)
  * @param user $attendee A {@link $USER} object describing the attendee (student)
  * @return array A hash with mail template substitutions 
  */
-function simplesscheduler_get_mail_variables ($simplesscheduler, $slot, $attendant, $attendee) {
+function simplescheduler_get_mail_variables ($simplescheduler, $slot, $attendant, $attendee) {
     
     global $CFG;
     
     $vars = array();
     
-    if ($simplesscheduler) {
-        $vars['MODULE']     = $simplesscheduler->name;
-        $vars['STAFFROLE']  = simplesscheduler_get_teacher_name($simplesscheduler);
+    if ($simplescheduler) {
+        $vars['MODULE']     = $simplescheduler->name;
+        $vars['STAFFROLE']  = simplescheduler_get_teacher_name($simplescheduler);
     }
     if ($slot) {
         $vars ['DATE']     = userdate($slot->starttime,get_string('strftimedate'));
@@ -693,7 +693,7 @@ function simplesscheduler_get_mail_variables ($simplesscheduler, $slot, $attenda
  * @param user $user A {@link $USER} object representing a user
  * @param course $course A {@link $COURSE} object representing a course
  */
-function simplesscheduler_print_user($user, $course, $messageselect=false, $return=false) {
+function simplescheduler_print_user($user, $course, $messageselect=false, $return=false) {
     
     global $CFG, $USER, $OUTPUT ;
     
@@ -755,7 +755,7 @@ function simplesscheduler_print_user($user, $course, $messageselect=false, $retu
         $output .= $string->role .': '. $user->role .'<br />';
     }
 
-	$extrafields = simplesscheduler_get_user_fields($user);
+	$extrafields = simplescheduler_get_user_fields($user);
 	foreach ($extrafields as $field) {
         $output .= $field->title . ': ' . $field->value . '<br />';	    
 	}
@@ -797,17 +797,17 @@ function simplesscheduler_print_user($user, $course, $messageselect=false, $retu
     }
 }
 
-function simplesscheduler_get_teacher_name($simplesscheduler) {
-    $name = $simplesscheduler->staffrolename;
+function simplescheduler_get_teacher_name($simplescheduler) {
+    $name = $simplescheduler->staffrolename;
     if (empty($name)) {
-        $name = get_string('teacher', 'simplesscheduler');
+        $name = get_string('teacher', 'simplescheduler');
     }
     return $name;
 }
 
-function simplesscheduler_group_scheduling_enabled($course, $cm) {
+function simplescheduler_group_scheduling_enabled($course, $cm) {
 	global $CFG;
-    $globalenable = (bool) $CFG->simplesscheduler_groupscheduling;
+    $globalenable = (bool) $CFG->simplescheduler_groupscheduling;
     $localenable = (groupmode($course, $cm) > 0);
     return $globalenable && $localenable;
 }
@@ -818,21 +818,21 @@ function simplesscheduler_group_scheduling_enabled($course, $cm) {
  * @param int $studentid
  * @return string language string describing result
  */ 
-function simplesscheduler_teacher_appoint_student($slotid, $studentid) {
+function simplescheduler_teacher_appoint_student($slotid, $studentid) {
 	global $DB;
 	
 	// load necessary objects
-	$slot = $DB->get_record('simplesscheduler_slots', array('id' => $slotid));
-	$simplesscheduler = $DB->get_record('simplesscheduler', array('id' => $slot->simplesschedulerid));
-	$course = $DB->get_record('course', array('id' => $simplesscheduler->course));
+	$slot = $DB->get_record('simplescheduler_slots', array('id' => $slotid));
+	$simplescheduler = $DB->get_record('simplescheduler', array('id' => $slot->simpleschedulerid));
+	$course = $DB->get_record('course', array('id' => $simplescheduler->course));
 	
-	if ($slot && $simplesscheduler && $course)
+	if ($slot && $simplescheduler && $course)
 	{
 		// make sure we do not already have an appointment
-		if ( ($simplesscheduler->simplesschedulermode == 'oneonly') && simplesscheduler_student_has_appointment($studentid, $simplesscheduler->id) ) {
+		if ( ($simplescheduler->simpleschedulermode == 'oneonly') && simplescheduler_student_has_appointment($studentid, $simplescheduler->id) ) {
 			return 'teacher_appoint_student_has_appointment';
 		}
-		elseif ($DB->get_records('simplesscheduler_appointment', array('slotid'=>$slotid,'studentid'=>$studentid))) {
+		elseif ($DB->get_records('simplescheduler_appointment', array('slotid'=>$slotid,'studentid'=>$studentid))) {
 			return 'teacher_appoint_student_already_appointed';
 		}
 		else {
@@ -843,17 +843,17 @@ function simplesscheduler_teacher_appoint_student($slotid, $studentid) {
 			$appointment->attended = 0;
 			$appointment->timecreated = time();
 			$appointment->timemodified = time();
-			$DB->insert_record('simplesscheduler_appointment', $appointment);
+			$DB->insert_record('simplescheduler_appointment', $appointment);
 			
 			// update calendar
-			simplesscheduler_events_update($slot, $course);
+			simplescheduler_events_update($slot, $course);
 	
 			// notify student if this is a future slot
-			if ($simplesscheduler->allownotifications && (time() < $slot->starttime)) {
+			if ($simplescheduler->allownotifications && (time() < $slot->starttime)) {
 				$student = $DB->get_record('user', array('id' => $studentid));
 				$teacher = $DB->get_record('user', array('id' => $slot->teacherid));
-				$vars = simplesscheduler_get_mail_variables($simplesscheduler,$slot,$teacher,$student);
-				simplesscheduler_send_email_from_template($student, $teacher, $course, 'newappointment', 'assigned', $vars, 'simplesscheduler');
+				$vars = simplescheduler_get_mail_variables($simplescheduler,$slot,$teacher,$student);
+				simplescheduler_send_email_from_template($student, $teacher, $course, 'newappointment', 'assigned', $vars, 'simplescheduler');
 			}
 			return 'teacher_appoint_student_success';
 		}
@@ -867,28 +867,28 @@ function simplesscheduler_teacher_appoint_student($slotid, $studentid) {
  * @param int $studentid
  * @return string language string describing result
  */ 
-function simplesscheduler_teacher_revoke_appointment($slotid, $studentid)
+function simplescheduler_teacher_revoke_appointment($slotid, $studentid)
 {
 	global $DB;
 	
 	// load necessary objects
-	$slot = $DB->get_record('simplesscheduler_slots', array('id' => $slotid));
-	$simplesscheduler = $DB->get_record('simplesscheduler', array('id' => $slot->simplesschedulerid));
-	$course = $DB->get_record('course', array('id' => $simplesscheduler->course));
-	if ($appointments = $DB->get_records('simplesscheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid), '', 'id,studentid')) {
+	$slot = $DB->get_record('simplescheduler_slots', array('id' => $slotid));
+	$simplescheduler = $DB->get_record('simplescheduler', array('id' => $slot->simpleschedulerid));
+	$course = $DB->get_record('course', array('id' => $simplescheduler->course));
+	if ($appointments = $DB->get_records('simplescheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid), '', 'id,studentid')) {
 		$appointment = reset($appointments);
-    	simplesscheduler_delete_appointment($appointment->id);
+    	simplescheduler_delete_appointment($appointment->id);
     		
     	// delete and recreate events for the slot
-        simplesscheduler_delete_calendar_events($slot);
-        simplesscheduler_add_update_calendar_events($slot, $course);
+        simplescheduler_delete_calendar_events($slot);
+        simplescheduler_add_update_calendar_events($slot, $course);
     	
         // notify student if this is a future slot
-        if ($simplesscheduler->allownotifications && (time() < $slot->starttime)) {
+        if ($simplescheduler->allownotifications && (time() < $slot->starttime)) {
             $student = $DB->get_record('user', array('id'=>$appointment->studentid));
             $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));        
-            $vars = simplesscheduler_get_mail_variables($simplesscheduler,$slot,$teacher,$student);
-            simplesscheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'simplesscheduler');
+            $vars = simplescheduler_get_mail_variables($simplescheduler,$slot,$teacher,$student);
+            simplescheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'simplescheduler');
         }
         return 'teacher_revoke_appointment_success';
     }
@@ -901,29 +901,29 @@ function simplesscheduler_teacher_revoke_appointment($slotid, $studentid)
  * @param int $studentid
  * @return boolean success or failure
  */      
-function simplesscheduler_student_revoke_appointment($slotid, $studentid)
+function simplescheduler_student_revoke_appointment($slotid, $studentid)
 {
 	global $DB;
 	
 	// load necessary objects
-	$slot = $DB->get_record('simplesscheduler_slots', array('id' => $slotid));
-	$simplesscheduler = $DB->get_record('simplesscheduler', array('id' => $slot->simplesschedulerid));
-	$course = $DB->get_record('course', array('id' => $simplesscheduler->course));
-	if ($appointments = $DB->get_records('simplesscheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid), '', 'id,studentid')) {
+	$slot = $DB->get_record('simplescheduler_slots', array('id' => $slotid));
+	$simplescheduler = $DB->get_record('simplescheduler', array('id' => $slot->simpleschedulerid));
+	$course = $DB->get_record('course', array('id' => $simplescheduler->course));
+	if ($appointments = $DB->get_records('simplescheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid), '', 'id,studentid')) {
 		$appointment = reset($appointments);
-    	simplesscheduler_delete_appointment($appointment->id);
+    	simplescheduler_delete_appointment($appointment->id);
     	
     	// delete and recreate events for the slot
-        simplesscheduler_delete_calendar_events($slot);
-        simplesscheduler_add_update_calendar_events($slot, $course);
+        simplescheduler_delete_calendar_events($slot);
+        simplescheduler_add_update_calendar_events($slot, $course);
     	
         // notify student if this is a future slot
-        if ($simplesscheduler->allownotifications && (time() < $slot->starttime)) {
+        if ($simplescheduler->allownotifications && (time() < $slot->starttime)) {
             $student = $DB->get_record('user', array('id'=>$appointment->studentid));
             $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));        
-            $vars = simplesscheduler_get_mail_variables($simplesscheduler,$slot,$teacher,$student);
-            //simplesscheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'simplesscheduler');
-            simplesscheduler_send_email_from_template($teacher, $student, $course, 'cancelledbystudent', 'cancelled', $vars, 'simplesscheduler');
+            $vars = simplescheduler_get_mail_variables($simplescheduler,$slot,$teacher,$student);
+            //simplescheduler_send_email_from_template($student, $teacher, $course, 'cancelledbyteacher', 'teachercancelled', $vars, 'simplescheduler');
+            simplescheduler_send_email_from_template($teacher, $student, $course, 'cancelledbystudent', 'cancelled', $vars, 'simplescheduler');
         }
         
         return true;
@@ -936,16 +936,16 @@ function simplesscheduler_student_revoke_appointment($slotid, $studentid)
  *
  * @todo implement me - user in studentview.controller.php
  */
-function simplesscheduler_student_appoint_student($slotid, $studentid)
+function simplescheduler_student_appoint_student($slotid, $studentid)
 {
 	global $DB;
 	
 	//load necessary objects
-	$slot = $DB->get_record('simplesscheduler_slots', array('id'=>$slotid));
-	$simplesscheduler = $DB->get_record('simplesscheduler', array('id' => $slot->simplesschedulerid));
-	$course = $DB->get_record('course', array('id' => $simplesscheduler->course));
+	$slot = $DB->get_record('simplescheduler_slots', array('id'=>$slotid));
+	$simplescheduler = $DB->get_record('simplescheduler', array('id' => $slot->simpleschedulerid));
+	$course = $DB->get_record('course', array('id' => $simplescheduler->course));
 	
-	if ($slot && $simplesscheduler && $course)
+	if ($slot && $simplescheduler && $course)
 	{
 		$appointment = new stdClass();
 		$appointment->slotid = $slotid;
@@ -953,17 +953,17 @@ function simplesscheduler_student_appoint_student($slotid, $studentid)
 		$appointment->attended = 0;
 		$appointment->timecreated = time();
 		$appointment->timemodified = time();
-		$DB->insert_record('simplesscheduler_appointment', $appointment);
+		$DB->insert_record('simplescheduler_appointment', $appointment);
     	
 		// update calendar	
-		simplesscheduler_events_update($slot, $course);
+		simplescheduler_events_update($slot, $course);
 			
 		// notify teacher
-		if ($simplesscheduler->allownotifications) {
+		if ($simplescheduler->allownotifications) {
 			$student = $DB->get_record('user', array('id' => $appointment->studentid));
 			$teacher = $DB->get_record('user', array('id' => $slot->teacherid));
-			$vars = simplesscheduler_get_mail_variables($simplesscheduler,$slot,$teacher,$student);
-			simplesscheduler_send_email_from_template($teacher, $student, $course, 'newappointment', 'applied', $vars, 'simplesscheduler');
+			$vars = simplescheduler_get_mail_variables($simplescheduler,$slot,$teacher,$student);
+			simplescheduler_send_email_from_template($teacher, $student, $course, 'newappointment', 'applied', $vars, 'simplescheduler');
 		}
 		return true;
     }

@@ -2,20 +2,20 @@
 
 /**
  * @package    mod
- * @subpackage simplesscheduler
+ * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
 /**
- * Define all the backup steps that will be used by the backup_simplesscheduler_activity_task
+ * Define all the backup steps that will be used by the backup_simplescheduler_activity_task
  */
 
 /**
- * Define the complete simplesscheduler structure for backup, with file and id annotations
+ * Define the complete simplescheduler structure for backup, with file and id annotations
  */
-class backup_simplesscheduler_activity_structure_step extends backup_activity_structure_step {
+class backup_simplescheduler_activity_structure_step extends backup_activity_structure_step {
 
     protected function define_structure() {
 
@@ -23,8 +23,8 @@ class backup_simplesscheduler_activity_structure_step extends backup_activity_st
         $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated
-        $simplesscheduler = new backup_nested_element('simplesscheduler', array('id'), array(
-            'name', 'intro', 'introformat', 'simplesschedulermode',
+        $simplescheduler = new backup_nested_element('simplescheduler', array('id'), array(
+            'name', 'intro', 'introformat', 'simpleschedulermode',
             'defaultslotduration', 'allownotifications', 'staffrolename',
             'teacher', 'timemodified'));
 
@@ -43,7 +43,7 @@ class backup_simplesscheduler_activity_structure_step extends backup_activity_st
 
         // Build the tree
 
-        $simplesscheduler->add_child($slots);
+        $simplescheduler->add_child($slots);
         $slots->add_child($slot);
 
         $slot->add_child($appointments);
@@ -51,27 +51,27 @@ class backup_simplesscheduler_activity_structure_step extends backup_activity_st
 
 
         // Define sources
-        $simplesscheduler->set_source_table('simplesscheduler', array('id' => backup::VAR_ACTIVITYID));
-        $slot->set_source_table('simplesscheduler_slots', array('simplesschedulerid' => backup::VAR_PARENTID));
+        $simplescheduler->set_source_table('simplescheduler', array('id' => backup::VAR_ACTIVITYID));
+        $slot->set_source_table('simplescheduler_slots', array('simpleschedulerid' => backup::VAR_PARENTID));
 
         // Include appointments only if we back up user information
         if ($userinfo) {
-            $appointment->set_source_table('simplesscheduler_appointment', array('slotid' => backup::VAR_PARENTID));
+            $appointment->set_source_table('simplescheduler_appointment', array('slotid' => backup::VAR_PARENTID));
         }
 
         // Define id annotations
-        $simplesscheduler->annotate_ids('scale', 'scale');
-        $simplesscheduler->annotate_ids('user', 'teacher');
+        $simplescheduler->annotate_ids('scale', 'scale');
+        $simplescheduler->annotate_ids('user', 'teacher');
         
         $slot->annotate_ids('user', 'teacherid');
         
         $appointment->annotate_ids('user', 'studentid');
 
         // Define file annotations
-        $simplesscheduler->annotate_files('mod_simplesscheduler', 'intro', null); // This file area has no itemid
+        $simplescheduler->annotate_files('mod_simplescheduler', 'intro', null); // This file area has no itemid
 
 
-        // Return the root element (simplesscheduler), wrapped into standard activity structure
-        return $this->prepare_activity_structure($simplesscheduler);
+        // Return the root element (simplescheduler), wrapped into standard activity structure
+        return $this->prepare_activity_structure($simplescheduler);
     }
 }

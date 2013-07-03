@@ -4,7 +4,7 @@
  * Controller for student view
  * 
  * @package    mod
- * @subpackage simplesscheduler
+ * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -12,14 +12,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/simplesscheduler/mailtemplatelib.php');
+require_once($CFG->dirroot.'/mod/simplescheduler/mailtemplatelib.php');
 
 
 /************************************************ Saving choice ************************************************/
 if ($action == 'savechoice') {
    
    	$slot_id_array = NULL;
-    if ($simplesscheduler->simplesschedulermode == 'multi')
+    if ($simplescheduler->simpleschedulermode == 'multi')
     {
     	$slot_id_array_raw = optional_param_array('slotid', '', PARAM_INT);
     }
@@ -43,7 +43,7 @@ if ($action == 'savechoice') {
     // $notes = optional_param('notes', '', PARAM_TEXT);
     
     //if (!$slot_id_array_request) {
-    //    notice(get_string('notselected', 'simplesscheduler'), "view.php?id={$cm->id}");
+    //    notice(get_string('notselected', 'simplescheduler'), "view.php?id={$cm->id}");
     //}
     
     // validate our slot ids
@@ -51,28 +51,28 @@ if ($action == 'savechoice') {
     {
 		foreach ($slot_id_array_request as $index => $slotid)
 		{
-			if (!$slot = $DB->get_record('simplesscheduler_slots', array('id' => $slotid))) {
-				print_error('errorinvalidslot', 'simplesscheduler');
+			if (!$slot = $DB->get_record('simplescheduler_slots', array('id' => $slotid))) {
+				print_error('errorinvalidslot', 'simplescheduler');
 			}
 		
-			$available = simplesscheduler_get_appointments($slotid);
+			$available = simplescheduler_get_appointments($slotid);
 			$consumed = ($available) ? count($available) : 0 ;
 	
-			$users_for_slot = simplesscheduler_get_appointed($slotid);
+			$users_for_slot = simplescheduler_get_appointed($slotid);
 			$already_signed_up = (isset($users_for_slot[$USER->id]));
 		
 			if (!$already_signed_up)
 			{
 				// if slot is already overcrowded
 				if ($slot->exclusivity > 0 && ($slot->exclusivity <= $consumed)) {
-					if ($updating = $DB->count_records('simplesscheduler_appointment', array('slotid' => $slot->id, 'studentid' => $USER->id))) {
-						$message = get_string('alreadyappointed', 'simplesscheduler');
+					if ($updating = $DB->count_records('simplescheduler_appointment', array('slotid' => $slot->id, 'studentid' => $USER->id))) {
+						$message = get_string('alreadyappointed', 'simplescheduler');
 					} else {
-						$message = get_string('slot_is_just_in_use', 'simplesscheduler');
+						$message = get_string('slot_is_just_in_use', 'simplescheduler');
 					}
 					echo $OUTPUT->box_start('error');
 					echo $message;
-					echo $OUTPUT->continue_button("{$CFG->wwwroot}/mod/simplesscheduler/view.php?id={$cm->id}");
+					echo $OUTPUT->continue_button("{$CFG->wwwroot}/mod/simplescheduler/view.php?id={$cm->id}");
 					echo $OUTPUT->box_end();
 					echo $OUTPUT->footer($course);
 					exit();
@@ -97,12 +97,12 @@ if ($action == 'savechoice') {
         foreach($oldslotownersarray as $oldslotownermember){
             if (is_numeric($oldslotownermember)){
                 // we are in 1.8
-                if (has_capability("mod/simplesscheduler:appoint", $context, $oldslotownermember)){
+                if (has_capability("mod/simplescheduler:appoint", $context, $oldslotownermember)){
                     $oldslotowners[] = $oldslotownermember;
                 }
             } else {
                 // we are in 1.9
-                if (has_capability("mod/simplesscheduler:appoint", $context, $oldslotownermember->id)){
+                if (has_capability("mod/simplescheduler:appoint", $context, $oldslotownermember->id)){
                     $oldslotowners[] = $oldslotownermember->id;
                 }
             }
@@ -120,11 +120,11 @@ if ($action == 'savechoice') {
         a.id as appointmentid,
         a.studentid as studentid
         FROM 
-        {simplesscheduler_slots} AS s,
-        {simplesscheduler_appointment} AS a 
+        {simplescheduler_slots} AS s,
+        {simplescheduler_appointment} AS a 
         WHERE 
         s.id = a.slotid AND
-        s.simplesschedulerid = '{$simplesscheduler->id}' AND 
+        s.simpleschedulerid = '{$simplescheduler->id}' AND 
         a.studentid IN ('$oldslotownerlist') AND
         a.attended = 0 
         ";
@@ -137,7 +137,7 @@ if ($action == 'savechoice') {
     if ($oldslots = $DB->get_records_sql($sql))
     {
         foreach($oldslots as $id => $slot) {
-            simplesscheduler_student_revoke_appointment($id, $slot->studentid);
+            simplescheduler_student_revoke_appointment($id, $slot->studentid);
         }
     }
     
@@ -147,7 +147,7 @@ if ($action == 'savechoice') {
     	{
     		/// create new appointment and add it for each member of the group
     		foreach($oldslotowners as $studentid) {
-    			simplesscheduler_student_appoint_student($slotid, $studentid);
+    			simplescheduler_student_appoint_student($slotid, $studentid);
         	}
     	}
     }
@@ -156,15 +156,15 @@ if ($action == 'savechoice') {
 // ************************************ Disengage alone from the slot ******************************* /
 if ($action == 'disengage') {
     $where = 'studentid = :studentid AND attended = 0 AND ' .
-             'EXISTS(SELECT 1 FROM {simplesscheduler_slots} sl WHERE sl.id = slotid AND sl.simplesschedulerid = :simplesscheduler )';
-    $params = array('simplesscheduler'=>$simplesscheduler->id, 'studentid'=>$USER->id);
-    $appointments = $DB->get_records_select('simplesscheduler_appointment', $where, $params);
+             'EXISTS(SELECT 1 FROM {simplescheduler_slots} sl WHERE sl.id = slotid AND sl.simpleschedulerid = :simplescheduler )';
+    $params = array('simplescheduler'=>$simplescheduler->id, 'studentid'=>$USER->id);
+    $appointments = $DB->get_records_select('simplescheduler_appointment', $where, $params);
     if ($appointments) {
         foreach($appointments as $appointment) {
-            $slot = $DB->get_record('simplesscheduler_slots', array('id' => $appointment->slotid));
+            $slot = $DB->get_record('simplescheduler_slots', array('id' => $appointment->slotid));
             if ($slot->starttime > time()) // only modify future slots
             {
-            	simplesscheduler_student_revoke_appointment($slot->id, $USER->id);
+            	simplescheduler_student_revoke_appointment($slot->id, $USER->id);
             }
         }
     }

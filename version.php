@@ -1,10 +1,10 @@
 <?PHP
 
 /**
- * Version information for mod/simplesscheduler
+ * Version information for mod/simplescheduler
  *
  * @package    mod
- * @subpackage simplesscheduler
+ * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -12,7 +12,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * This is the development branch (master) of the simple simplesscheduler module.
+ * This is the development branch (master) of the simple simplescheduler module.
  */
 
 $module->version  = 2013070400;       // The current module version (Date: YYYYMMDDXX)

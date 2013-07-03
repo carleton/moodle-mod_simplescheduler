@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/simplesscheduler/db" VERSION="20071113" COMMENT="XMLDB file for simplesscheduler module"
+<XMLDB PATH="mod/simplescheduler/db" VERSION="20071113" COMMENT="XMLDB file for simplescheduler module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="simplesscheduler" COMMENT="simplesscheduler table retrofitted from MySQL" NEXT="simplesscheduler_slots">
+    <TABLE NAME="simplescheduler" COMMENT="simplescheduler table retrofitted from MySQL" NEXT="simplescheduler_slots">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="course"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="course" NEXT="intro"/>
         <FIELD NAME="intro" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="name" NEXT="introformat"/>
-        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="intro" NEXT="simplesschedulermode"/>
-        <FIELD NAME="simplesschedulermode" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="introformat" NEXT="defaultslotduration"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="intro" NEXT="simpleschedulermode"/>
+        <FIELD NAME="simpleschedulermode" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="introformat" NEXT="defaultslotduration"/>
         <FIELD NAME="defaultslotduration" TYPE="int" LENGTH="4" NOTNULL="false" UNSIGNED="false" DEFAULT="15" SEQUENCE="false" ENUM="false" PREVIOUS="simpleschedulermode" NEXT="allownotifications"/>
         <FIELD NAME="allownotifications" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="defaultslotduration" NEXT="staffrolename"/>
         <FIELD NAME="staffrolename" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="allownotifications" NEXT="teacher"/>
@@ -19,14 +19,14 @@
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="teacher"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for simplesscheduler"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for simplescheduler"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="simplesscheduler_slots" COMMENT="simplesscheduler_slots table retrofitted from MySQL" PREVIOUS="simplesscheduler" NEXT="simplesscheduler_appointment">
+    <TABLE NAME="simplescheduler_slots" COMMENT="simplescheduler_slots table retrofitted from MySQL" PREVIOUS="simplescheduler" NEXT="simplescheduler_appointment">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="simplesschedulerid"/>
-        <FIELD NAME="simplesschedulerid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="starttime"/>
-        <FIELD NAME="starttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="simplesschedulerid" NEXT="duration"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="simpleschedulerid"/>
+        <FIELD NAME="simpleschedulerid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="starttime"/>
+        <FIELD NAME="starttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="simpleschedulerid" NEXT="duration"/>
         <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="starttime" NEXT="teacherid"/>
         <FIELD NAME="teacherid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="duration" NEXT="appointmentlocation"/>
         <FIELD NAME="appointmentlocation" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="teacherid" NEXT="timemodified"/>
@@ -38,10 +38,10 @@
         <FIELD NAME="hideuntil" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="emaildate"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for simplesscheduler_slots"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for simplescheduler_slots"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="simplesscheduler_appointment" COMMENT="simplesscheduler_appointment table retrofitted from MySQL" PREVIOUS="simplesscheduler_slots">
+    <TABLE NAME="simplescheduler_appointment" COMMENT="simplescheduler_appointment table retrofitted from MySQL" PREVIOUS="simplescheduler_slots">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="slotid"/>
         <FIELD NAME="slotid" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="studentid"/>
@@ -51,7 +51,7 @@
         <FIELD NAME="timemodified" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for simplesscheduler_appointment"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for simplescheduler_appointment"/>
       </KEYS>
     </TABLE>
   </TABLES>

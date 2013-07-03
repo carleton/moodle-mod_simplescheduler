@@ -1,24 +1,24 @@
 <?php  
 
 /**
- * Global configuration settings for the simplesscheduler module.
+ * Global configuration settings for the simplescheduler module.
  * 
  * @package    mod
- * @subpackage simplesscheduler
+ * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
-require_once($CFG->dirroot.'/mod/simplesscheduler/lib.php');
+require_once($CFG->dirroot.'/mod/simplescheduler/lib.php');
 
-$settings->add(new admin_setting_configcheckbox('simplesscheduler_showemailplain', get_string('showemailplain', 'simplesscheduler'),
-    get_string('showemailplain_desc', 'simplesscheduler'), 0));
+$settings->add(new admin_setting_configcheckbox('simplescheduler_showemailplain', get_string('showemailplain', 'simplescheduler'),
+    get_string('showemailplain_desc', 'simplescheduler'), 0));
 
-$settings->add(new admin_setting_configcheckbox('simplesscheduler_groupscheduling', get_string('groupscheduling', 'simplesscheduler'),
-    get_string('groupscheduling_desc', 'simplesscheduler'), 1));
+$settings->add(new admin_setting_configcheckbox('simplescheduler_groupscheduling', get_string('groupscheduling', 'simplescheduler'),
+    get_string('groupscheduling_desc', 'simplescheduler'), 1));
 
-$settings->add(new admin_setting_configtext('simplesscheduler_maxstudentsperslot', get_string('maxstudentsperslot', 'simplesscheduler'),
-    get_string('maxstudentsperslot_desc', 'simplesscheduler'), 9, PARAM_INT));
+$settings->add(new admin_setting_configtext('simplescheduler_maxstudentsperslot', get_string('maxstudentsperslot', 'simplescheduler'),
+    get_string('maxstudentsperslot_desc', 'simplescheduler'), 9, PARAM_INT));
 
 ?>

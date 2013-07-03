@@ -3,14 +3,14 @@
  * Scheduler module capability definition
  *
  * @package    mod
- * @subpackage simplesscheduler
+ * @subpackage simplescheduler
  *
  * @todo review these are they all still necessary and correct?
  */
 
 $capabilities = array(
 
-    'mod/simplesscheduler:addinstance' => array(
+    'mod/simplescheduler:addinstance' => array(
         'riskbitmask' => RISK_XSS,
 
         'captype' => 'write',
@@ -22,7 +22,7 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
 
-    'mod/simplesscheduler:appoint' => array(
+    'mod/simplescheduler:appoint' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -34,7 +34,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/simplesscheduler:attend' => array(
+    'mod/simplescheduler:attend' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -46,7 +46,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/simplesscheduler:manage' => array(
+    'mod/simplescheduler:manage' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -58,7 +58,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/simplesscheduler:manageallappointments' => array(
+    'mod/simplescheduler:manageallappointments' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -70,7 +70,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/simplesscheduler:canscheduletootherteachers' => array(
+    'mod/simplescheduler:canscheduletootherteachers' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -82,7 +82,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/simplesscheduler:canseeotherteachersbooking' => array(
+    'mod/simplescheduler:canseeotherteachersbooking' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -94,7 +94,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/simplesscheduler:disengage' => array(
+    'mod/simplescheduler:disengage' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -106,7 +106,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/simplesscheduler:seeotherstudentsbooking' => array(
+    'mod/simplescheduler:seeotherstudentsbooking' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -118,7 +118,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/simplesscheduler:seeotherstudentsresults' => array(
+    'mod/simplescheduler:seeotherstudentsresults' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
