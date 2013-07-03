@@ -19,6 +19,10 @@ The Simple Scheduler module helps you to schedule appointments with your student
 Teachers specify time slots for meetings, students then choose one of them on Moodle.
 Teacher can record comments on the meeting within the module.
 
+simplescheduler is a fork of scheduler that aims for the following:
+
+* support for single and multiple slot signup
+* simplified UI that supports just core scheduling functionality
 
 === Installation instructions ===
 
@@ -34,14 +38,9 @@ This module is intended for Moodle 2.3 and above.
 
 === Authors ===
 
-simplescheduler is a fork of scheduler that aims for the following:
-
-* support for single and multiple slot signup
-* simplified UI that supports just core scheduling functionality
-
 The fork is maintained by Nathan White, Carleton College <nwhite@carleton.edu>
 
-Based on previous work by:
+Based on previous work on scheduler by:
 
 * Henning Bostelmann, University of York <henning.bostelmann@york.ac.uk>
 * Gustav Delius <gustav.delius@york.ac.uk> (until Moodle 1.7)
@@ -56,6 +55,16 @@ With further contributions taken from:
 
 === Release notes ===
 
---- Version 2.3 ---
+This is experimental. It is a highly changed version of the scheduler code base.
 
-Intended for Moodle 2.3 and later; reduced to core scheduling functionality and cleanup up code.
+There are many areas of the original code base that have not been altered, and
+many other areas that have been totally removed.
+
+Here is a list of overall @todos - there is probably more. This is alpha code.
+
+1. Remove JavaScript hacks that are relied upon for saving teacher comments.
+2. Make the "Students who still need to make an appointment" section a separate tab.
+3. Verify that capabilities are properly setup and checked at the correct point in the code.
+4. Test group functionality - remove it or make it work.
+5. Add warning message on slot delete action.
+6. Make integration with calendar smarter / more efficient.

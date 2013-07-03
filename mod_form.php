@@ -41,29 +41,10 @@ class mod_simplescheduler_mod_form extends moodleform_mod {
 	    $modeoptions['multi'] = get_string('multi', 'simplescheduler');
 	    $mform->addElement('select', 'simpleschedulermode', get_string('mode', 'simplescheduler'), $modeoptions);
 	    $mform->addHelpButton('simpleschedulermode', 'appointmentmode', 'simplescheduler');
-
-	    $reuseguardoptions[24] = 24 . ' ' . get_string('hours');
-	    $reuseguardoptions[48] = 48 . ' ' . get_string('hours');
-	    $reuseguardoptions[72] = 72 . ' ' . get_string('hours');
-	    $reuseguardoptions[96] = 96 . ' ' . get_string('hours');
-	    $reuseguardoptions[168] = 168 . ' ' . get_string('hours');
-	    $mform->addElement('select', 'reuseguardtime', get_string('reuseguardtime', 'simplescheduler'), $reuseguardoptions);
-	    $mform->addHelpButton('reuseguardtime', 'reuseguardtime', 'simplescheduler');
-
 	    $mform->addElement('text', 'defaultslotduration', get_string('defaultslotduration', 'simplescheduler'), array('size'=>'2'));
 	    $mform->setType('defaultslotduration', PARAM_INT);
 	    $mform->addHelpButton('defaultslotduration', 'defaultslotduration', 'simplescheduler');
         $mform->setDefault('defaultslotduration', 15);
-
-        //$mform->addElement('modgrade', 'scale', get_string('grade'));
-        $mform->addElement('hidden', 'scale');
-        $mform->setDefault('scale', 0);
-
-        //$gradingstrategy[MEAN_GRADE] = get_string('meangrade', 'simplescheduler');
-        //$gradingstrategy[MAX_GRADE] = get_string('maxgrade', 'simplescheduler');
-	    //$mform->addElement('select', 'gradingstrategy', get_string('gradingstrategy', 'simplescheduler'), $gradingstrategy);
-	    //$mform->addHelpButton('gradingstrategy', 'gradingstrategy', 'simplescheduler');
-        //$mform->disabledIf('gradingstrategy', 'scale', 'eq', 0);
 
         $yesno[0] = get_string('no');
         $yesno[1] = get_string('yes');

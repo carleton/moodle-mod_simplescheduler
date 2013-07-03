@@ -9,6 +9,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  * @todo consider "past slots" toggle
+ * @todo have my appointments highlighted by default
  */
 defined('MOODLE_INTERNAL') || die();
 
@@ -288,10 +289,6 @@ $tabrows = array();
 $row  = array();
 
 switch ($action){
-    case 'viewstatistics':{
-        $currenttab = get_string('statistics', 'simplescheduler');
-        break;
-    }
     case 'datelist':{
         $currenttab = get_string('datelist', 'simplescheduler');
         break;
@@ -323,8 +320,6 @@ if ($DB->count_records('simplescheduler_slots', array('simpleschedulerid'=>$simp
 }
 $tabname = get_string('datelist', 'simplescheduler');
 $row[] = new tabobject($tabname, "view.php?id={$cm->id}&amp;what=datelist", $tabname);
-$tabname = get_string('statistics', 'simplescheduler');
-$row[] = new tabobject($tabname, "view.php?what=viewstatistics&amp;id={$cm->id}&amp;course={$simplescheduler->course}&amp;page=overall", $tabname);
 $tabname = get_string('downloads', 'simplescheduler');
 $row[] = new tabobject($tabname, "view.php?what=downloads&amp;id={$cm->id}&amp;course={$simplescheduler->course}", $tabname);
 $tabrows[] = $row;
@@ -358,7 +353,6 @@ $slots = $DB->get_records_select('simplescheduler_slots', $select, null, 'startt
 if ($slots){
     foreach(array_keys($slots) as $slotid){
         $slots[$slotid]->isappointed = $DB->count_records('simplescheduler_appointment', array('slotid'=>$slotid));
-        $slots[$slotid]->isattended = $DB->record_exists('simplescheduler_appointment', array('slotid'=>$slotid, 'attended'=> 1));
     }
 }
 
@@ -604,7 +598,7 @@ if (!$students) {
     $maillist = array();
     $date = usergetdate(time());
     foreach ($students as $student) {
-        if (!simplescheduler_has_slot($student->id, $simplescheduler, true, $simplescheduler->simpleschedulermode == 'onetime')) {
+        if (!simplescheduler_has_slot($student->id, $simplescheduler, true)) {
             $picture = $OUTPUT->user_picture($student);
             $name = "<a href=\"../../user/view.php?id={$student->id}&amp;course={$simplescheduler->course}\">";
             $name .= fullname($student);
@@ -718,7 +712,7 @@ if (empty($groups)){
     foreach($groups as $group) {
         $members = groups_get_members($group->id, 'u.id, lastname, firstname, email, picture', 'lastname, firstname');
         if (empty($members)) continue;
-        if (!simplescheduler_has_slot(implode(',', array_keys($members)), $simplescheduler, true, $simplescheduler->simpleschedulermode == 'onetime')) {
+        if (!simplescheduler_has_slot(implode(',', array_keys($members)), $simplescheduler, true)) {
             $actions = '';
             $actions .= "<a href=\"view.php?what=schedulegroup&amp;id={$cm->id}&amp;groupid={$group->id}&amp;page={$page}\">";
             $actions .= get_string('schedule', 'simplescheduler');

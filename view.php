@@ -97,10 +97,7 @@ echo $OUTPUT->header();
 
 // teacher side
 if (has_capability('mod/simplescheduler:manage', $context)) {
-    if ($action == 'viewstatistics'){
-        include $CFG->dirroot.'/mod/simplescheduler/viewstatistics.php';
-    }
-    elseif ($action == 'viewstudent'){
+    if ($action == 'viewstudent'){
         include $CFG->dirroot.'/mod/simplescheduler/viewstudent.php';
     }
     elseif ($action == 'downloads' || $action == 'dodownloadcsv'){

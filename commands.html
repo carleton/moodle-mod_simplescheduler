@@ -6,7 +6,7 @@
         </th>
 <?php
 if ($displaydeletebuttons){
-    $deletespan = (has_capability('mod/scheduler:manageallappointments', $context)) ? 4 : 2 ;
+    $deletespan = (has_capability('mod/simplescheduler:manageallappointments', $context)) ? 4 : 2 ;
 ?>
         <th colspan="<?php echo $deletespan; ?>">
             <?php echo $OUTPUT->heading(get_string('delete'),3) ?>
@@ -34,13 +34,13 @@ if ($displaydeletebuttons){
          </td>
 <?php
 if ($displaydeletebuttons){
-    if (has_capability('mod/scheduler:manageallappointments', $context)){
+    if (has_capability('mod/simplescheduler:manageallappointments', $context)){
 ?>
          <td>
             <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="deleteallform">
                 <script type="text/javascript">
                     function confirmdeletionall(){
-                        if (confirm('<?php print_string('confirmdelete', 'scheduler') ?>')){
+                        if (confirm('<?php print_string('confirmdelete', 'simplescheduler') ?>')){
                              document.forms['deleteallform'].submit();
                         }
                     }
@@ -55,7 +55,7 @@ if ($displaydeletebuttons){
             <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="deleteallunusedform">
                 <script type="text/javascript">
                     function confirmdeletionallunused(){
-                        if (confirm('<?php print_string('confirmdelete', 'scheduler') ?>')){
+                        if (confirm('<?php print_string('confirmdelete', 'simplescheduler') ?>')){
                              document.forms['deleteallunusedform'].submit();
                         }
                     }
@@ -73,7 +73,7 @@ if ($displaydeletebuttons){
             <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="deleteunusedform">
                 <script type="text/javascript">
                     function confirmdeletionunused(){
-                        if (confirm('<?php print_string('confirmdelete', 'scheduler') ?>')){
+                        if (confirm('<?php print_string('confirmdelete', 'simplescheduler') ?>')){
                              document.forms['deleteunusedform'].submit();
                         }
                     }
@@ -88,7 +88,7 @@ if ($displaydeletebuttons){
             <form action="view.php?id=<?php p($cm->id) ?>" method="post" name="deletemineform">
                 <script type="text/javascript">
                     function confirmdeletionmine(){
-                        if (confirm('<?php print_string('confirmdelete', 'scheduler') ?>')){
+                        if (confirm('<?php print_string('confirmdelete', 'simplescheduler') ?>')){
                              document.forms['deletemineform'].submit();
                         }
                     }

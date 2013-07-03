@@ -15,9 +15,9 @@ defined('MOODLE_INTERNAL') || die();
 include_once $CFG->dirroot.'/mod/simplescheduler/locallib.php';
 include_once $CFG->dirroot.'/mod/simplescheduler/mailtemplatelib.php';
 
-define('SCHEDULER_SELF', 0); // Used for setting conflict search scope 
-define('SCHEDULER_OTHERS', 1); // Used for setting conflict search scope 
-define('SCHEDULER_ALL', 2); // Used for setting conflict search scope 
+define('SIMPLESCHEDULER_SELF', 0); // Used for setting conflict search scope 
+define('SIMPLESCHEDULER_OTHERS', 1); // Used for setting conflict search scope 
+define('SIMPLESCHEDULER_ALL', 2); // Used for setting conflict search scope 
 
 /**
  * Given an object containing all the necessary data,

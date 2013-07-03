@@ -7,6 +7,8 @@
  * @subpackage simplescheduler
  * @copyright  2013 Nathan White and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * @todo get rid of JavaScript - test group functionality and make it non hacky.
  */
     
 defined('MOODLE_INTERNAL') || die();
@@ -40,7 +42,7 @@ if ($slots = simplescheduler_get_available_slots($USER->id, $simplescheduler->id
     $studentPastAppointedSlots = array();
     foreach($slots as $slot) {
         /// check if other appointement is not "on the way". Student could not apply to it.
-        if (simplescheduler_get_conflicts($simplescheduler->id, $slot->starttime, $slot->starttime + $slot->duration * 60, 0, $USER->id, SCHEDULER_OTHERS)){
+        if (simplescheduler_get_conflicts($simplescheduler->id, $slot->starttime, $slot->starttime + $slot->duration * 60, 0, $USER->id, SIMPLESCHEDULER_OTHERS)){
         	continue;
         }
         
@@ -92,7 +94,7 @@ if ($slots = simplescheduler_get_available_slots($USER->id, $simplescheduler->id
 	/// prepare appointed slot table
     
     if (count($studentPastAppointedSlots)){
-        echo $OUTPUT->heading(get_string('attendedslots' ,'simplescheduler'));
+        echo $OUTPUT->heading(get_string('appointedslots' ,'simplescheduler'));
         
         $table = new html_table();
         

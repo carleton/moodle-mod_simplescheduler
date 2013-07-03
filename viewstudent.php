@@ -50,7 +50,6 @@ $sql = "
     s.*,
     a.id as appid,
     a.studentid,
-    a.attended,
     a.appointmentnote,
     a.timemodified as apptimemodified
     FROM
@@ -94,15 +93,9 @@ if ($slots = $DB->get_records_sql($sql, array($simplescheduler->id, $studentid, 
                 $distributecheck = "<br/><input type=\"checkbox\" name=\"distribute{$slot->appid}\" value=\"1\" /> ".get_string('distributetoslot', 'simplescheduler')."\n";
             }
             //display appointments
-            if ($slot->attended == 0){
-            	$teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
-                $table->data[] = array ($startdate, $starttime, $endtime, $slot->appointmentnote, fullname($teacher));
-            }
-            else {
-                $slot->appointmentnote .= "<br/><span class=\"timelabel\">[".userdate($slot->apptimemodified)."]</span>";
-                $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
-                $table->data[] = array ($startdate, $starttime, $endtime, $slot->appointmentnote, fullname($teacher));
-            }
+            //$slot->appointmentnote .= "<br/><span class=\"timelabel\">[".userdate($slot->apptimemodified)."]</span>";
+            $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
+            $table->data[] = array ($startdate, $starttime, $endtime, $slot->appointmentnote, fullname($teacher));
         } else {
             if ($DB->count_records('simplescheduler_appointment', array('slotid' => $slot->id)) > 1){
                 $distributecheck = "<input type=\"checkbox\" name=\"distribute\" value=\"1\" /> ".get_string('distributetoslot', 'simplescheduler')."\n";

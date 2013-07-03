@@ -14,7 +14,7 @@
 <input type="hidden" name="groupid" value="" /><!-- for group scheduling only -->
 <input type="hidden" name="appointments" value="<?php p(serialize($form->appointments)) ?>" />
 <?php 
-if (!has_capability('mod/scheduler:canscheduletootherteachers', $context)){
+if (!has_capability('mod/simplescheduler:canscheduletootherteachers', $context)){
 ?>
 <input type="hidden" name="teacherid" value="<?php p($form->teacherid) ?>" />
 <?php
@@ -37,14 +37,14 @@ if($action == 'schedule' or $action == 'schedulegroup'){
     if ($form->availableslots){
 ?>
 <tr valign="top">
-    <td align="right"><b><?php print_string('chooseexisting', 'scheduler') ?>:</b></td>
+    <td align="right"><b><?php print_string('chooseexisting', 'simplescheduler') ?>:</b></td>
     <td align="left">
 <?php 
     $startdatemem = '';
     $starttimemem = '';
     foreach($form->availableslots as $aSlot){
-        $startdatecnv = scheduler_userdate($aSlot->starttime,1);
-        $starttimecnv = scheduler_usertime($aSlot->starttime,1);        
+        $startdatecnv = simplescheduler_userdate($aSlot->starttime,1);
+        $starttimecnv = simplescheduler_usertime($aSlot->starttime,1);        
 
         $startdatestr = ($startdatemem != '' and $startdatemem == $startdatecnv) ? "-----------------" : $startdatecnv ;
         $starttimestr = ($starttimemem != '' and $starttimemem == $starttimecnv) ? '' : $starttimecnv ;
@@ -63,7 +63,7 @@ if($action == 'schedule' or $action == 'schedulegroup'){
 }
 ?>
 <tr valign="top">
-    <td align="right"><b><?php print_string('date', 'scheduler') ?>:</b></td>
+    <td align="right"><b><?php print_string('date', 'simplescheduler') ?>:</b></td>
     <td align="left" <?php print_error_class(@$errors, 'rangestart') ?> >
         <?php 
             echo html_writer::select_time('days', 'day', $form->starttime);
@@ -73,31 +73,31 @@ if($action == 'schedule' or $action == 'schedulegroup'){
     </td>
 </tr>
 <tr valign="top">
-    <td align="right"><b><?php print_string('starttime', 'scheduler') ?>:</b></td>
+    <td align="right"><b><?php print_string('starttime', 'simplescheduler') ?>:</b></td>
     <td align="left">
         <?php
            echo html_writer::select_time('hours', 'hour', $form->starttime);
            echo html_writer::select_time('minutes', 'minute', $form->starttime);
-           echo $OUTPUT->help_icon('choosingslotstart', 'scheduler');
+           echo $OUTPUT->help_icon('choosingslotstart', 'simplescheduler');
         ?>
     </td>
 </tr>
 <tr valign="top">
-    <td align="right"><b><?php print_string('duration', 'scheduler') ?>:</b></td>
+    <td align="right"><b><?php print_string('duration', 'simplescheduler') ?>:</b></td>
     <td align="left">
         <input type="text" size="3" maxlength="3" name="duration" value="<?php echo $form->duration?>" />
-        <?php print_string('minutes', 'scheduler') ?>
+        <?php print_string('minutes', 'simplescheduler') ?>
     </td>
 </tr>
 <tr valign="top">
-    <td align="right"><b><?php print_string('multiplestudents', 'scheduler') ?>:</b></td>
+    <td align="right"><b><?php print_string('multiplestudents', 'simplescheduler') ?>:</b></td>
     <td align="left" <?php print_error_class(@$errors, 'exclusivity') ?> >
         <script type="text/javascript">
            
         </script>
         <?php
-            $maxexclusive = $CFG->scheduler_maxstudentsperslot;
-            $exclusivemenu['0'] = get_string('unlimited', 'scheduler');
+            $maxexclusive = $CFG->simplescheduler_maxstudentsperslot;
+            $exclusivemenu['0'] = get_string('unlimited', 'simplescheduler');
             $knownslots = count($form->appointments);
             if ($knownslots == 0) $knownslots++;            
             for($i = $knownslots ; $i <= $maxexclusive; $i++){
@@ -106,25 +106,25 @@ if($action == 'schedule' or $action == 'schedulegroup'){
             
             echo html_writer::select($exclusivemenu, 'exclusivity', $form->exclusivity, array(), array('id'=>'exclusivechooser'));
             
-            echo $OUTPUT->help_icon('exclusivity', 'scheduler', get_string('groupsession', 'scheduler'));
+            echo $OUTPUT->help_icon('exclusivity', 'simplescheduler', get_string('groupsession', 'simplescheduler'));
         ?>
     </td>
 </tr>
 <tr valign="top">
-    <td align="right"><b><?php print_string('location', 'scheduler') ?>:</b></td>
+    <td align="right"><b><?php print_string('location', 'simplescheduler') ?>:</b></td>
     <td align="left">
         <input type="text" size="30" maxlength="50" name="appointmentlocation" value="<?php echo $form->appointmentlocation ?>" />
-        <?php echo $OUTPUT->help_icon('location', 'scheduler'); ?>
+        <?php echo $OUTPUT->help_icon('location', 'simplescheduler'); ?>
     </td>
 </tr>
 <?php
-if (has_capability('mod/scheduler:canscheduletootherteachers', $context)){
+if (has_capability('mod/simplescheduler:canscheduletootherteachers', $context)){
 ?>
 <tr valign="top">
-    <td align="right"><b><?php p(scheduler_get_teacher_name($scheduler)); ?>:</b></td>
+    <td align="right"><b><?php p(simplescheduler_get_teacher_name($simplescheduler)); ?>:</b></td>
     <td align="left" <?php print_error_class(@$errors, 'teacherid') ?> >
         <?php
-            $attendants = scheduler_get_attendants($cm->id);
+            $attendants = simplescheduler_get_attendants($cm->id);
             $attendantsmenu = array();
             if ($attendants){
                 foreach($attendants as $attendant){
@@ -132,9 +132,9 @@ if (has_capability('mod/scheduler:canscheduletootherteachers', $context)){
                 }
                 echo html_writer::select($attendantsmenu, 'teacherid', $form->teacherid);
             } else {
-               print_string('noteachershere', 'scheduler', s(scheduler_get_teacher_name($scheduler)));
+               print_string('noteachershere', 'simplescheduler', s(simplescheduler_get_teacher_name($simplescheduler)));
             }
-            echo $OUTPUT->help_icon('bookwithteacher', 'scheduler'); 
+            echo $OUTPUT->help_icon('bookwithteacher', 'simplescheduler'); 
         ?>
     </td>
 </tr>
@@ -142,7 +142,7 @@ if (has_capability('mod/scheduler:canscheduletootherteachers', $context)){
 }
 ?>
 <tr valign="top">
-    <td align="right"><b><?php print_string('displayfrom', 'scheduler') ?>:</b></td>
+    <td align="right"><b><?php print_string('displayfrom', 'simplescheduler') ?>:</b></td>
     <td align="left">
         <?php
             echo html_writer::select_time('days', 'displayday', $form->hideuntil);
@@ -152,7 +152,7 @@ if (has_capability('mod/scheduler:canscheduletootherteachers', $context)){
     </td>
 </tr>
 <tr valign="top">
-    <td align="right"><b><?php print_string('comments', 'scheduler') ?>:</b></td>
+    <td align="right"><b><?php print_string('comments', 'simplescheduler') ?>:</b></td>
     <td align="left">
         <?php
             if (!isset($form->notes)) {
@@ -178,13 +178,13 @@ if (has_capability('mod/scheduler:canscheduletootherteachers', $context)){
 <tr>
     <td colspan="2">
 <?php 
-echo $OUTPUT->box_start(get_string('appointments', 'scheduler'), 'center');
+echo $OUTPUT->box_start(get_string('appointments', 'simplescheduler'), 'center');
 echo $OUTPUT->box_end();
 ?>
         </td>
     </tr>
 </table>
-<input type="submit" value="<?php  print_string('save', 'scheduler') ?>" />
+<input type="submit" value="<?php  print_string('save', 'simplescheduler') ?>" />
 <input type="button" value="<?php  print_string('cancel') ?>" onclick="self.location.href='view.php?id=<?php echo $cm->id?>'" />
 </center>
 </form>

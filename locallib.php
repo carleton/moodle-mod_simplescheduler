@@ -86,20 +86,20 @@ function simplescheduler_get_possible_attendees($cm, $groups=''){
  * @param int $starttimethe start of time slot as a timestamp
  * @param int $endtime end of time slot as a timestamp
  * @param int $teacher if not null, the id of the teacher constraint, 0 otherwise standas for "all teachers"
- * @param int $others selects where to search for conflicts, [SCHEDULER_SELF, SCHEDULER_OTHERS, SCHEDULER_ALL]
+ * @param int $others selects where to search for conflicts, [SIMPLESCHEDULER_SELF, SIMPLESCHEDULER_OTHERS, SIMPLESCHEDULER_ALL]
  * @param boolean $careexclusive if false, conflict will consider all slots wether exlusive or not. Use it for testing if user is appointed in the given scope.
  * @uses $CFG
  * @uses $DB
  * @return array array of conflicting slots
  */
-function simplescheduler_get_conflicts($simpleschedulerid, $starttime, $endtime, $teacher=0, $student=0, $others=SCHEDULER_SELF, $careexclusive=true) {
+function simplescheduler_get_conflicts($simpleschedulerid, $starttime, $endtime, $teacher=0, $student=0, $others=SIMPLESCHEDULER_SELF, $careexclusive=true) {
     global $CFG, $DB;
     
     switch ($others){
-        case SCHEDULER_SELF:
+        case SIMPLESCHEDULER_SELF:
             $simpleschedulerScope = "s.simpleschedulerid = {$simpleschedulerid} AND ";
             break;
-        case SCHEDULER_OTHERS:
+        case SIMPLESCHEDULER_OTHERS:
             $simpleschedulerScope = "s.simpleschedulerid != {$simpleschedulerid} AND ";
             break;
         default:
@@ -172,7 +172,6 @@ function simplescheduler_get_available_slots($studentid, $simpleschedulerid, $st
         foreach($slots as $slot){
             $slot->population = $DB->count_records('simplescheduler_appointment', array('slotid' => $slot->id));
             $slot->appointed = ($slot->population > 0);
-            $slot->attended = $DB->record_exists('simplescheduler_appointment', array('slotid' => $slot->id, 'attended' => 1));
             if ($studentside){
                 $slot->appointedbyme = $DB->record_exists('simplescheduler_appointment', array('slotid' => $slot->id, 'studentid' => $studentid));
                 if ($slot->appointedbyme) {
@@ -220,18 +219,16 @@ function simplescheduler_student_has_appointment($studentid, $simpleschedulerid)
  * @param object $userlist
  * @param object $simplescheduler
  * @param boolean $student, if true, is a student, a teacher otherwise
- * @param boolean $unattended, if true, only checks for unattended slots
  * @param string $otherthan giving a slotid, excludes this slot from the search
  * @uses $CFG
  * @uses $DB
  * @return the count of records
  */
-function simplescheduler_has_slot($userlist, &$simplescheduler, $student=true, $unattended = false, $otherthan = 0){
+function simplescheduler_has_slot($userlist, &$simplescheduler, $student=true, $otherthan = 0){
     global $CFG, $DB;
     
     $userlist = str_replace(',', "','", $userlist);
     
-    $unattendedClause = ($unattended) ? ' AND a.attended = 0 ' : '' ;
     $otherthanClause = ($otherthan) ? " AND a.slotid != $otherthan " : '' ;
     
     if ($student){
@@ -245,7 +242,6 @@ function simplescheduler_has_slot($userlist, &$simplescheduler, $student=true, $
             a.slotid = s.id AND
             s.simpleschedulerid = ? AND
             a.studentid IN ('{$userlist}')
-            $unattendedClause
             $otherthanClause
             ";
         return $DB->count_records_sql($sql, array($simplescheduler->id));
@@ -593,9 +589,8 @@ function simplescheduler_events_update($slot, $course) {
     global $DB;
     
     $slotDoesntHaveAStudent = !$DB->count_records('simplescheduler_appointment', array('slotid' => $slot->id));
-    $slotWasAttended = $DB->count_records('simplescheduler_appointment', array('slotid' => $slot->id, 'attended' => 1));
     
-    if ($slotDoesntHaveAStudent || $slotWasAttended) {
+    if ($slotDoesntHaveAStudent) {
         simplescheduler_delete_calendar_events($slot);
     }
     else {
@@ -840,7 +835,6 @@ function simplescheduler_teacher_appoint_student($slotid, $studentid) {
 			$appointment = new stdClass();
 			$appointment->slotid = $slotid;
 			$appointment->studentid = $studentid;
-			$appointment->attended = 0;
 			$appointment->timecreated = time();
 			$appointment->timemodified = time();
 			$DB->insert_record('simplescheduler_appointment', $appointment);
@@ -950,7 +944,6 @@ function simplescheduler_student_appoint_student($slotid, $studentid)
 		$appointment = new stdClass();
 		$appointment->slotid = $slotid;
 		$appointment->studentid = $studentid;
-		$appointment->attended = 0;
 		$appointment->timecreated = time();
 		$appointment->timemodified = time();
 		$DB->insert_record('simplescheduler_appointment', $appointment);

@@ -131,8 +131,7 @@ if($action == 'downloadexcel' || $action == 'downloadods'){
                 foreach($appointments as $appointment){
                     $user = $DB->get_record('user', array('id' => $appointment->studentid), 'id,firstname,lastname');
                     $user->lastname = strtoupper($user->lastname);
-                    $strattended = ($appointment->attended) ? ' (A) ': '';
-                    $appointedlist[] = fullname($user). " $strattended";
+                    $appointedlist[] = fullname($user);
                 }
                 $myxls[$sheetname]->write_string($i[$sheetname], $j, implode(',', $appointedlist));
             }
@@ -288,8 +287,7 @@ if ($action == 'downloadcsv'){
                     foreach($appointments as $appointment){
                         $user = $DB->get_record('user', array('id' => $appointment->studentid), 'id,firstname,lastname');
                         $user->lastname = strtoupper($user->lastname);
-                        $strattended = ($appointment->attended) ? ' (A) ': '';
-                        $appointedlist[] = fullname($user).$strattended;
+                        $appointedlist[] = fullname($user);
                     }
                     $stream .= implode(',', $appointedlist);
                 }
@@ -297,77 +295,6 @@ if ($action == 'downloadcsv'){
             }
         }
     }
-    else if ($subaction == 'grades'){
-        $sql = "
-            SELECT
-            a.id,
-            a.studentid,
-            a.grade,
-            a.appointmentnote,
-            u.lastname,
-            u.firstname
-            FROM
-            {user} u,
-            {simplescheduler_slots} s,
-            {simplescheduler_appointment} a
-            WHERE
-            u.id = a.studentid AND
-            a.slotid = s.id AND
-            s.simpleschedulerid = ? AND
-            a.attended = 1
-            ORDER BY
-            u.lastname,
-            u.firstname,
-            s.teacherid
-            ";
-        $grades = $DB->get_records_sql($sql, array($simplescheduler->id));
-        $finals = array();
-        foreach($grades as $grade){
-        	if (!array_key_exists($grade->studentid, $finals)) {
-        	    $finals[$grade->studentid] = new stdClass();
-        	}
-            if ($simplescheduler->scale > 0){ // numeric scales
-                $finals[$grade->studentid]->sum = @$finals[$grade->studentid]->sum + $grade->grade;
-                $finals[$grade->studentid]->count = @$finals[$grade->studentid]->count + 1;
-                $finals[$grade->studentid]->max = (@$finals[$grade->studentid]->max < $grade->grade) ? $grade->grade : @$finals[$studentid]->max ;
-            }
-            else if ($simplescheduler->scale < 0){ // non numeric scales
-                $scaleid = - ($simplescheduler->scale);
-                if ($scale = $DB->get_record('scale', 'id', $scaleid)) {
-                    $scalegrades = make_menu_from_list($scale->scale);
-                    foreach ($grades as $aGrade) {
-                        $finals[$aGrade->studentid]->sum = @$finals[$aGrade->studentid]->sum + $scalegrades[$aGgrade->grade];
-                        $finals[$aGrade->studentid]->count = @$finals[$aGrade->studentid]->count + 1;
-                        $finals[$aGrade->studentid]->max = (@$finals[$aGrade->studentid]->max < $aGrade) ? $scalegrades[$aGgrade->grade] : @$finals[$aGrade->studentid]->max ;
-                    }
-                }
-            }
-            $finals[$grade->studentid]->lastname = $grade->lastname;
-            $finals[$grade->studentid]->firstname = $grade->firstname;
-            $separator = isset($finals[$grade->studentid]->appointmentnote) ? ' | ' : ''; 
-            $finals[$grade->studentid]->appointmentnote = @$finals[$grade->studentid]->appointmentnote.$separator.$grade->appointmentnote;
-        }
-        /// Making title line
-        $stream .= get_string('student', 'simplescheduler') . $csvfieldseparator;
-        $stream .= get_string('grades') . $csvfieldseparator;
-        $stream .= get_string('finalgrade', 'simplescheduler') . $csvfieldseparator;
-        $stream .= get_string('notes', 'simplescheduler') . $csvrecordseparator;
-        
-        if ($finals){
-            foreach($finals as $studentid => $final){
-                $stream .= fullname($final) . $csvfieldseparator; 
-                $stream .= $final->count . $csvfieldseparator; 
-                if ($simplescheduler->gradingstrategy == MEAN_GRADE){
-                    $stream .= $final->sum / $final->count . $csvfieldseparator;
-                }
-                else{
-                    $stream .= $final->max . $csvfieldseparator;
-                }
-                $stream .= strtr($final->appointmentnote, "\r\n", "  ") . $csvrecordseparator; 
-            }
-        }
-    }
-    
     echo mb_convert_encoding($stream, $csvencoding, 'UTF-8');
     exit;    
 }

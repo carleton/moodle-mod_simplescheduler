@@ -68,8 +68,8 @@ switch ($action) {
             // Avoid overlapping slots, by asking the user if they'd like to overwrite the existing ones...
             // for other simplescheduler, we check independently of exclusivity. Any slot here conflicts
             // for this simplescheduler, we check against exclusivity. Any complete slot here conflicts
-            $conflictsRemote = simplescheduler_get_conflicts($simplescheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_OTHERS, false);
-            $conflictsLocal = simplescheduler_get_conflicts($simplescheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_SELF, true);
+            $conflictsRemote = simplescheduler_get_conflicts($simplescheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SIMPLESCHEDULER_OTHERS, false);
+            $conflictsLocal = simplescheduler_get_conflicts($simplescheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SIMPLESCHEDULER_SELF, true);
             if (!$conflictsRemote) $conflictsRemote = array();
             if (!$conflictsLocal) $conflictsLocal = array();
             $conflicts = $conflictsRemote + $conflictsLocal;
@@ -190,7 +190,6 @@ switch ($action) {
         if($appointments){
             foreach ($appointments as $appointment){ // insert updated
                 $appointment->slotid = $slot->id; // now we know !!
-                $appointment->attended = 0;
                 $DB->insert_record('simplescheduler_appointment', $appointment);
             }
         }
@@ -261,7 +260,7 @@ switch ($action) {
                     (($dayofweek == 0) && ($data->sunday == 1))){
                 $noslotsallowed = false;
                 $data->starttime = make_timestamp($eventdate['year'], $eventdate['mon'], $eventdate['mday'], $data->starthour, $data->startminute);
-                $conflicts = simplescheduler_get_conflicts($simplescheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
+                $conflicts = simplescheduler_get_conflicts($simplescheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SIMPLESCHEDULER_ALL, false);
                 if (!$data->forcewhenoverlap && $conflicts) {
                     $hasconflict = true;
                 }
@@ -325,7 +324,7 @@ switch ($action) {
                     $slot->emaildate = make_timestamp($eventdate['year'], $eventdate['mon'], $eventdate['mday'], 0, 0) - $data->emailfrom;
                 }
             	while ($slot->starttime <= $data->timeend - $data->duration * 60) {
-                    $conflicts = simplescheduler_get_conflicts($simplescheduler->id, $data->timestart, $data->timestart + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
+                    $conflicts = simplescheduler_get_conflicts($simplescheduler->id, $data->timestart, $data->timestart + $data->duration * 60, $data->teacherid, 0, SIMPLESCHEDULER_ALL, false);
                     if ($conflicts) {
                         if (!$data->forcewhenoverlap){
                             print_string('conflictingslots', 'simplescheduler');

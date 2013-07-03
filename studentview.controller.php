@@ -125,8 +125,7 @@ if ($action == 'savechoice') {
         WHERE 
         s.id = a.slotid AND
         s.simpleschedulerid = '{$simplescheduler->id}' AND 
-        a.studentid IN ('$oldslotownerlist') AND
-        a.attended = 0 
+        a.studentid IN ('$oldslotownerlist')
         ";
     if (!empty($slot_id_array_validated))
     {
@@ -155,7 +154,7 @@ if ($action == 'savechoice') {
 
 // ************************************ Disengage alone from the slot ******************************* /
 if ($action == 'disengage') {
-    $where = 'studentid = :studentid AND attended = 0 AND ' .
+    $where = 'studentid = :studentid AND ' .
              'EXISTS(SELECT 1 FROM {simplescheduler_slots} sl WHERE sl.id = slotid AND sl.simpleschedulerid = :simplescheduler )';
     $params = array('simplescheduler'=>$simplescheduler->id, 'studentid'=>$USER->id);
     $appointments = $DB->get_records_select('simplescheduler_appointment', $where, $params);
