@@ -48,7 +48,6 @@ $sql = "
     u1.firstname AS studentfirstname,
     u1.department AS studentdepartment, 
     a.appointmentnote,
-    a.grade,
     sc.name,
     sc.id as simpleschedulerid,
     c.shortname as courseshort,
