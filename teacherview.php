@@ -346,6 +346,7 @@ if ($action) {
 	
 			if (isset($hasconflict))
 			{
+				$erroritem = new stdClass;
 				$erroritem->message = get_string('error_overlappings', 'simplescheduler');
 				$erroritem->on = 'range';
 				$errors[] = $erroritem;
@@ -430,6 +431,8 @@ if ($action) {
 								foreach($conflicts as $conflict){
 									simplescheduler_delete_slot($conflict->id);
 								}
+								$DB->insert_record('simplescheduler_slots', $slot, false);
+								$countslots++;
 							}
 						}
 						else {

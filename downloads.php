@@ -362,27 +362,6 @@ else{
             </form>
         </td>
     </tr>
-<?php
-if ($simplescheduler->scale != 0){
-    ?>
-    <tr>
-        <td>
-            <form action="view.php" method="post" name="deleteallform">
-                <input type="hidden" name="what" value="dodownloadcsv" />
-                <input type="hidden" name="subaction" value="grades" />
-                <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
-                <input type="submit" name="go_btn" value="<?php echo $strdownloadcsvgrades ?>" style="width:240px"/>
-            </form>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <br/><?php print_string('exportinstructions','simplescheduler') ?>
-        </td>
-    </tr>
-<?php
-}
-?>
 </table>
 </center>
 <?php

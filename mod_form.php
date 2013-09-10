@@ -33,7 +33,7 @@ class mod_simplescheduler_mod_form extends moodleform_mod {
         $this->add_intro_editor(false, get_string('introduction', 'simplescheduler'));
 
 	    $mform->addElement('text', 'staffrolename', get_string('staffrolename', 'simplescheduler'), array('size'=>'48'));
-	    $mform->setType('name', PARAM_CLEANHTML);
+	    $mform->setType('staffrolename', PARAM_CLEANHTML);
 	    $mform->addHelpButton('staffrolename', 'staffrolename', 'simplescheduler');
 	
 	    //$modeoptions['onetime'] = get_string('oneatatime', 'simplescheduler');
@@ -52,7 +52,7 @@ class mod_simplescheduler_mod_form extends moodleform_mod {
 	    $mform->addHelpButton('allownotifications', 'notifications', 'simplescheduler');
 
 		// Legacy. This field is still in the DB but is meaningless, meanwhile.
-	    $mform->addElement('hidden', 'teacher');
+	    // $mform->addElement('hidden', 'teacher');
 
         $this->standard_coursemodule_elements();
 
