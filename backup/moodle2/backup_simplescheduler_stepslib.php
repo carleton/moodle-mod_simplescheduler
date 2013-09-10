@@ -60,7 +60,6 @@ class backup_simplescheduler_activity_structure_step extends backup_activity_str
         }
 
         // Define id annotations
-        $simplescheduler->annotate_ids('scale', 'scale');
         $simplescheduler->annotate_ids('user', 'teacher');
         
         $slot->annotate_ids('user', 'teacherid');

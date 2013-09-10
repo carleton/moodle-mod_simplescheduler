@@ -46,9 +46,6 @@ class restore_simplescheduler_activity_structure_step extends restore_activity_s
 
         $data->timemodified = $this->apply_date_offset($data->timemodified);
 
-        if ($data->scale < 0) { // scale found, get mapping
-            $data->scale = -($this->get_mappingid('scale', abs($data->scale)));
-        }
         $data->teacher = $this->get_mappingid('user', $data->teacher);
 
         // insert the simplescheduler record
