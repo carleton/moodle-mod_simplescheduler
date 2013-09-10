@@ -13,13 +13,12 @@
  * @todo review to make sure capabilities are checked as appropriate
  * @todo revamp revokeone to utilize existing/new methods from locallib.php
  * @todo notify needs to use strings from lang file
- * @todo fix conflict handling in "add slots" view - right now slots seem to get deleted
  * @todo get database insert / update / delete into locallib and out of the this file
  * @todo use moodle form classes properly
  */
 defined('MOODLE_INTERNAL') || die();
 
-function get_slot_data(&$form){
+function get_slot_data(){
 	global $USER;
 	$form = new stdClass();
     if (!$form->hideuntil = optional_param('hideuntil', '', PARAM_INT)){
@@ -42,12 +41,13 @@ function get_slot_data(&$form){
     // if no teacher specified, the current user (who edits the slot) is assumed to be the teacher
     $form->teacherid = optional_param('teacherid', $USER->id, PARAM_INT);
     $form->appointmentlocation = required_param('appointmentlocation', PARAM_CLEAN);
+    return $form;
 }
 
 /**
  *
  */
-function get_session_data(&$form){
+function get_session_data(){
 	global $USER;
 	$form = new stdClass();
     if (!$form->rangestart = optional_param('rangestart', '', PARAM_INT)){
@@ -84,6 +84,7 @@ function get_session_data(&$form){
     $form->appointmentlocation = optional_param('appointmentlocation', '', PARAM_CLEAN);
     $form->emailfrom = required_param('emailfrom', PARAM_CLEAN);
     $form->displayfrom = required_param('displayfrom', PARAM_CLEAN);
+    return $form;
 }
 
 // load group restrictions
@@ -106,8 +107,7 @@ if ($action) {
 			$slotid = optional_param('slotid', '', PARAM_INT);
 		
 			// get standard slot parms
-			$data = new stdClass();
-			get_slot_data($data);
+			$data = get_slot_data();
 			$appointments = unserialize(stripslashes(optional_param('appointments', '', PARAM_RAW)));
 		
 			$errors = array();
@@ -277,7 +277,7 @@ if ($action) {
 		/************************************ Saving a session with slots *************************************/
 		case 'doaddsession':{
 			// This creates sessions using the data submitted by the user via the form on add.html
-			get_session_data($data);
+			$data = get_session_data();
 	
 			$fordays = (($data->rangeend - $data->rangestart) / DAYSECS);
 	
@@ -565,12 +565,12 @@ if ($action) {
 /************************************ View : New single slot form ****************************************/
 if ($action == 'addslot'){
 	echo $OUTPUT->heading(get_string('addsingleslot', 'simplescheduler'));
-    $form = new stdClass();
     if (!empty($errors)) {
-        get_slot_data($form);
+        $form = get_slot_data();
         $form->what = 'doaddupdateslot';
         $form->appointments = $appointments;
     } else {
+    	$form = new stdClass();
         $form->what = 'doaddupdateslot';
         // blank appointment data
         if (empty($form->appointments)) $form->appointments = array();
@@ -625,10 +625,9 @@ if ($action == 'updateslot') {
     $slotid = required_param('slotid', PARAM_INT);
     
     echo $OUTPUT->heading(get_string('updatesingleslot', 'simplescheduler'));
-    $form = new stdClass();
     
     if(!empty($errors)){ // if some errors, get data from client side
-    	get_slot_data($form);
+    	$form = get_slot_data();
     	$form->appointments = unserialize(stripslashes(required_param('appointments', PARAM_RAW)));
     } else {
     	/// get data from the last inserted
@@ -676,11 +675,11 @@ if ($action == 'addsession') {
         echo $OUTPUT->box($errorstr, 'errorbox');
     }
     
-    $form = new stdClass();
+    
     if (!empty($errors)){
-        get_session_data($data);
-        $form = &$data;
+        $form = get_session_data();
     } else {
+    	$form = new stdClass();
         $form->rangestart = time();
         $form->rangeend = time();
         $form->timestart = time();
